@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Connections from "./pages/Connections";
 import Switches from "./pages/Switches";
 import DataManagement from "./pages/DataManagement";
+import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const ProtectedRoutes = () => {
               <Route path="/connections" element={<Connections />} />
               <Route path="/switches" element={<Switches />} />
               <Route path="/data-management" element={<DataManagement />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

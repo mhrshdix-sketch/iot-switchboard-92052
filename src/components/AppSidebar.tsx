@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, LogOut } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +24,7 @@ const items = [
   { title: 'اتصالات', url: '/connections', icon: Wifi },
   { title: 'پنل‌ها', url: '/switches', icon: ToggleLeft },
   { title: 'اطلاعات داشبورد', url: '/data-management', icon: Download },
+  { title: 'تنظیمات', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -78,18 +79,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3 space-y-2">
-        <div className="flex gap-2">
-          <ThemeToggle />
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="flex-1 hover:bg-destructive hover:text-destructive-foreground transition-smooth"
-          >
-            <LogOut className="w-4 h-4 ml-2" />
-            خروج
-          </Button>
-        </div>
+      <SidebarFooter className="border-t border-border p-3">
+        <Button
+          variant="outline"
+          onClick={handleLogout}
+          className="w-full hover:bg-destructive hover:text-destructive-foreground transition-smooth"
+        >
+          <LogOut className="w-4 h-4 ml-2" />
+          خروج
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );

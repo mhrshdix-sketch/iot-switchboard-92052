@@ -110,7 +110,7 @@ const Login = () => {
         </Card>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>نسخه 1.0.0 | طراحی شده با ❤️</p>
+          <p>❤️ طراحی شده توسط Mehrsa-Tech ❤️</p>
         </div>
       </div>
     </div>

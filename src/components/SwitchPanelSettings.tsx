@@ -28,6 +28,8 @@ interface SwitchPanelSettingsProps {
 }
 
 const sizeOptions = [
+  { value: 'xxs', label: 'ریز' },
+  { value: 'xs', label: 'خیلی کوچک' },
   { value: 'sm', label: 'کوچک' },
   { value: 'md', label: 'متوسط' },
   { value: 'lg', label: 'بزرگ' },
@@ -45,14 +47,18 @@ export const SwitchPanelSettings = ({
   const [size, setSize] = useState<string>(switchPanel.size || 'md');
   const [icon, setIcon] = useState(switchPanel.icon || '💡');
   const [colorOn, setColorOn] = useState(switchPanel.colorOn || '#22c55e');
-  const [colorOff, setColorOff] = useState(switchPanel.colorOff || '#64748b');
+  const [name, setName] = useState(switchPanel.name);
 
   const handleSave = () => {
+    if (!name.trim()) {
+      toast.error('نام پنل نمی‌تواند خالی باشد');
+      return;
+    }
     onUpdate({
-      size: size as 'sm' | 'md' | 'lg' | 'xl',
+      name,
+      size: size as 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl',
       icon,
       colorOn,
-      colorOff,
     });
     toast.success('تنظیمات با موفقیت ذخیره شد');
     onOpenChange(false);
@@ -69,6 +75,15 @@ export const SwitchPanelSettings = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>نام پنل</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="نام پنل"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>اندازه دکمه</Label>
             <Select value={size} onValueChange={setSize}>
@@ -95,41 +110,21 @@ export const SwitchPanelSettings = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>رنگ روشن</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="color"
-                  value={colorOn}
-                  onChange={(e) => setColorOn(e.target.value)}
-                  className="w-full h-10 cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={colorOn}
-                  onChange={(e) => setColorOn(e.target.value)}
-                  className="w-24"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>رنگ خاموش</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="color"
-                  value={colorOff}
-                  onChange={(e) => setColorOff(e.target.value)}
-                  className="w-full h-10 cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={colorOff}
-                  onChange={(e) => setColorOff(e.target.value)}
-                  className="w-24"
-                />
-              </div>
+          <div className="space-y-2">
+            <Label>رنگ روشن</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                value={colorOn}
+                onChange={(e) => setColorOn(e.target.value)}
+                className="w-full h-10 cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={colorOn}
+                onChange={(e) => setColorOn(e.target.value)}
+                className="w-24"
+              />
             </div>
           </div>
         </div>

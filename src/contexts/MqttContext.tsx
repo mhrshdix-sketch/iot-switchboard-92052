@@ -17,7 +17,7 @@ interface MqttContextType {
   updateSwitch: (id: string, updates: Partial<SwitchPanel>) => void;
   deleteSwitch: (id: string) => void;
   toggleSwitch: (switchId: string) => void;
-  publishMessage: (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2) => void;
+  publishMessage: (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2, retain?: boolean) => void;
 }
 
 const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -232,10 +232,10 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const publishMessage = (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2) => {
+  const publishMessage = (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2, retain?: boolean) => {
     const client = clients.get(connectionId);
     if (client && client.connected) {
-      client.publish(topic, payload, { qos }, (err) => {
+      client.publish(topic, payload, { qos, retain: retain || false }, (err) => {
         if (err) {
           console.error('Publish error:', err);
           toast.error('خطا در ارسال پیام');
@@ -253,7 +253,7 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newState = !sw.state;
     const payload = newState ? sw.payloadOn : sw.payloadOff;
     
-    publishMessage(sw.connectionId, sw.topic, payload, sw.qos);
+    publishMessage(sw.connectionId, sw.topic, payload, sw.qos, sw.retain);
     updateSwitch(switchId, { 
       state: newState, 
       lastUpdated: new Date().toISOString() 

@@ -10,6 +10,7 @@ import { QoSLevel } from '@/types/mqtt';
 import { Plus, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 
 const Switches = () => {
   const { connections, switches, addSwitch } = useMqtt();
@@ -23,6 +24,7 @@ const Switches = () => {
     payloadOn: 'ON',
     payloadOff: 'OFF',
     qos: 0 as QoSLevel,
+    retain: false,
     icon: '',
   });
 
@@ -36,6 +38,7 @@ const Switches = () => {
       payloadOn: 'ON',
       payloadOff: 'OFF',
       qos: 0 as QoSLevel,
+      retain: false,
       icon: '',
     });
     setShowForm(false);
@@ -185,6 +188,27 @@ const Switches = () => {
                         <SelectItem value="2">2 - Exactly once</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <div className="flex items-center justify-between p-4 border rounded-lg border-border">
+                      <div className="space-y-1 flex-1">
+                        <Label htmlFor="retain" className="text-base font-medium cursor-pointer">
+                          Retain Message
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          پیام را در بروکر ذخیره کند تا دستگاه‌های جدید آخرین وضعیت را دریافت کنند
+                        </p>
+                      </div>
+                      <Switch
+                        id="retain"
+                        checked={formData.retain}
+                        onCheckedChange={(checked) => 
+                          setFormData({ ...formData, retain: checked })
+                        }
+                        className="mr-4"
+                      />
+                    </div>
                   </div>
                 </div>
 

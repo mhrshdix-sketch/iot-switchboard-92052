@@ -54,6 +54,8 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
 
   const size = switchPanel.size || 'md';
   const sizeClasses = {
+    xxs: 'min-h-[80px] p-2',
+    xs: 'min-h-[100px] p-3',
     sm: 'min-h-[120px] p-4',
     md: 'min-h-[160px] p-6',
     lg: 'min-h-[200px] p-8',
@@ -61,6 +63,8 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
   };
 
   const iconSizes = {
+    xxs: 'text-2xl',
+    xs: 'text-3xl',
     sm: 'text-4xl',
     md: 'text-5xl',
     lg: 'text-6xl',
@@ -68,7 +72,6 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
   };
 
   const colorOn = switchPanel.colorOn || '#22c55e';
-  const colorOff = switchPanel.colorOff || '#64748b';
 
   return (
     <>
@@ -152,10 +155,11 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
         {/* Status Indicator */}
         <div 
           className={cn(
-            'absolute top-4 left-4 w-3 h-3 rounded-full transition-all duration-300'
+            'absolute top-4 left-4 w-3 h-3 rounded-full transition-all duration-300',
+            isActive ? '' : 'bg-muted-foreground/50'
           )}
           style={{
-            backgroundColor: isActive ? colorOn : colorOff,
+            backgroundColor: isActive ? colorOn : undefined,
             boxShadow: isActive ? `0 0 10px ${colorOn}` : undefined,
           }}
         />

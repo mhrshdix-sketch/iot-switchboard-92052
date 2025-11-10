@@ -26,12 +26,12 @@ export interface SwitchPanel {
   payloadOn: string;
   payloadOff: string;
   qos: QoSLevel;
+  retain?: boolean;
   state: boolean;
   icon?: string;
   lastUpdated?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'xxs' | 'sm' | 'md' | 'lg' | 'xl';
   colorOn?: string;
-  colorOff?: string;
   order?: number;
 }
 

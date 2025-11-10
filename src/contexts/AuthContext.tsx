@@ -11,11 +11,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const CORRECT_USERNAME = 'admin';
 const CORRECT_PASSWORD = 'xadminx';
 const AUTH_KEY = 'iot_panel_auth';
+const REQUIRE_LOGIN_KEY = 'iot_panel_require_login';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check if login is required
+    const requireLogin = localStorage.getItem(REQUIRE_LOGIN_KEY);
+    if (requireLogin === 'false') {
+      // If login is not required, auto-authenticate
+      setIsAuthenticated(true);
+      return;
+    }
+    
     // Check if user was previously authenticated
     const authStatus = localStorage.getItem(AUTH_KEY);
     if (authStatus === 'true') {
