@@ -1,0 +1,289 @@
+@import '@fontsource/vazirmatn/300.css';
+@import '@fontsource/vazirmatn/400.css';
+@import '@fontsource/vazirmatn/500.css';
+@import '@fontsource/vazirmatn/600.css';
+@import '@fontsource/vazirmatn/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* IoT Panel Design System - Modern, Professional, RTL-Ready */
+
+@layer base {
+  :root {
+    /* Base Colors - Light Fresh IoT Theme */
+    --background: 210 25% 98%;
+    --foreground: 215 25% 15%;
+
+    /* Card & Surface Colors */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    /* Popover Colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Primary - Modern Blue for IoT */
+    --primary: 210 90% 52%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 90% 65%;
+
+    /* Secondary - Tech Green */
+    --secondary: 160 60% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Success State - Green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning State - Orange */
+    --warning: 35 91% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Muted Colors */
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent Colors */
+    --accent: 210 90% 95%;
+    --accent-foreground: 210 90% 52%;
+
+    /* Destructive Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border & Input */
+    --border: 215 20% 88%;
+    --input: 215 20% 88%;
+    --ring: 210 90% 52%;
+
+    /* Border Radius */
+    --radius: 0.75rem;
+
+    /* Custom IoT Colors */
+    --iot-online: 142 71% 45%;
+    --iot-offline: 0 0% 60%;
+    --iot-connecting: 35 91% 55%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 90% 52%) 0%, hsl(210 90% 65%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(160 60% 45%) 0%, hsl(160 60% 60%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 90% 52%) 0%, hsl(160 60% 45%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 25% 98%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px hsl(215 25% 15% / 0.05);
+    --shadow-md: 0 4px 12px hsl(215 25% 15% / 0.08);
+    --shadow-lg: 0 8px 24px hsl(215 25% 15% / 0.12);
+    --shadow-glow: 0 0 24px hsl(210 90% 52% / 0.3);
+    --shadow-glow-success: 0 0 24px hsl(142 71% 45% / 0.3);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 15%;
+    --sidebar-primary: 210 90% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 90% 95%;
+    --sidebar-accent-foreground: 210 90% 52%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 210 90% 52%;
+  }
+
+  .dark {
+    /* Base Colors - Dark IoT Theme */
+    --background: 215 30% 8%;
+    --foreground: 210 20% 98%;
+
+    /* Card & Surface Colors */
+    --card: 215 28% 12%;
+    --card-foreground: 210 20% 98%;
+
+    /* Popover Colors */
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Primary - Bright Blue for Dark Mode */
+    --primary: 210 90% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 90% 70%;
+
+    /* Secondary - Bright Tech Green */
+    --secondary: 160 55% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Success State */
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning State */
+    --warning: 35 90% 60%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Muted Colors */
+    --muted: 215 25% 18%;
+    --muted-foreground: 215 15% 65%;
+
+    /* Accent Colors */
+    --accent: 215 25% 18%;
+    --accent-foreground: 210 90% 58%;
+
+    /* Destructive Colors */
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border & Input */
+    --border: 215 25% 22%;
+    --input: 215 25% 22%;
+    --ring: 210 90% 58%;
+
+    /* Custom IoT Colors */
+    --iot-online: 142 70% 50%;
+    --iot-offline: 0 0% 45%;
+    --iot-connecting: 35 90% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 90% 58%) 0%, hsl(210 90% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(160 55% 50%) 0%, hsl(160 55% 65%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 70% 50%) 0%, hsl(142 70% 65%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 90% 58%) 0%, hsl(160 55% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(215 28% 12%) 0%, hsl(215 30% 10%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 24px hsl(210 90% 58% / 0.4);
+    --shadow-glow-success: 0 0 24px hsl(142 70% 50% / 0.4);
+
+    /* Sidebar */
+    --sidebar-background: 215 28% 12%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 210 90% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 18%;
+    --sidebar-accent-foreground: 210 90% 58%;
+    --sidebar-border: 215 25% 22%;
+    --sidebar-ring: 210 90% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-vazir;
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* RTL Support */
+  html[dir="rtl"] {
+    direction: rtl;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer utilities {
+  /* Gradient Utilities */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  /* Shadow Utilities */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-success {
+    box-shadow: var(--shadow-glow-success);
+  }
+
+  /* Animation Utilities */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-fast {
+    transition: var(--transition-fast);
+  }
+
+  /* Status Colors */
+  .status-online {
+    @apply bg-[hsl(var(--iot-online))];
+  }
+
+  .status-offline {
+    @apply bg-[hsl(var(--iot-offline))];
+  }
+
+  .status-connecting {
+    @apply bg-[hsl(var(--iot-connecting))];
+  }
+
+  /* Mobile Responsive Touch Targets */
+  @media (max-width: 768px) {
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Safe Area for iOS */
+  @supports (padding: max(0px)) {
+    .safe-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    .safe-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    
+    .safe-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+    
+    .safe-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+}
