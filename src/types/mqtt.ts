@@ -35,6 +35,28 @@ export interface SwitchPanel {
   order?: number;
 }
 
+export interface ButtonPanel {
+  id: string;
+  name: string;
+  connectionId: string;
+  topic: string;
+  payload: string;
+  qos: QoSLevel;
+  retain: boolean;
+  icon?: string;
+  size?: 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  colorOn?: string;
+}
+
+export interface UriLauncherPanel {
+  id: string;
+  name: string;
+  connectionId: string;
+  topic: string;
+  qos: QoSLevel;
+  uri?: string;
+}
+
 export interface MqttMessage {
   topic: string;
   payload: string | Buffer;

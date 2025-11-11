@@ -1,32 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Settings as SettingsIcon, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTheme } from '@/components/theme-provider';
 
-const REQUIRE_LOGIN_KEY = 'iot_panel_require_login';
-
 const Settings = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [requireLogin, setRequireLogin] = useState(true);
-
-  useEffect(() => {
-    const savedRequireLogin = localStorage.getItem(REQUIRE_LOGIN_KEY);
-    if (savedRequireLogin === 'false') {
-      setRequireLogin(false);
-    }
-  }, []);
-
-  const handleRequireLoginChange = (checked: boolean) => {
-    setRequireLogin(checked);
-    localStorage.setItem(REQUIRE_LOGIN_KEY, checked.toString());
-    toast.success(checked ? 'ورود اجباری فعال شد' : 'ورود اجباری غیرفعال شد');
-  };
 
   const handleThemeChange = (newTheme: 'light' | 'dark') => {
     setTheme(newTheme);
@@ -35,9 +17,8 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-8 safe-right safe-left" dir="rtl">
-        {/* Header */}
-        <div className="mb-6">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+        <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className="w-5 h-5" />
@@ -55,34 +36,6 @@ const Settings = () => {
         </div>
 
         <div className="space-y-6 max-w-2xl">
-          {/* Security Settings */}
-          <Card className="gradient-card border-border/50">
-            <CardHeader>
-              <CardTitle>امنیت</CardTitle>
-              <CardDescription>
-                تنظیمات مربوط به احراز هویت و امنیت
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1 flex-1">
-                  <Label htmlFor="require-login" className="text-base font-medium">
-                    نیاز به ورود
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    هربار که برنامه را باز می‌کنید نیاز به وارد کردن نام کاربری و رمز عبور دارید
-                  </p>
-                </div>
-                <Switch
-                  id="require-login"
-                  checked={requireLogin}
-                  onCheckedChange={handleRequireLoginChange}
-                  className="mr-4"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Appearance Settings */}
           <Card className="gradient-card border-border/50">
             <CardHeader>

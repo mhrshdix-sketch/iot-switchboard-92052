@@ -11,9 +11,21 @@ import { toast } from 'sonner';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Load saved credentials on mount
+  useState(() => {
+    const savedUsername = localStorage.getItem('saved_username');
+    const savedPassword = localStorage.getItem('saved_password');
+    if (savedUsername && savedPassword) {
+      setUsername(savedUsername);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +36,14 @@ const Login = () => {
       setIsLoading(false);
 
       if (success) {
+        // Save credentials if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem('saved_username', username);
+          localStorage.setItem('saved_password', password);
+        } else {
+          localStorage.removeItem('saved_username');
+          localStorage.removeItem('saved_password');
+        }
         toast.success('ورود موفقیت‌آمیز');
         navigate('/');
       } else {
@@ -89,6 +109,20 @@ const Login = () => {
                   className="transition-smooth"
                   disabled={isLoading}
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-border cursor-pointer"
+                  disabled={isLoading}
+                />
+                <Label htmlFor="remember" className="cursor-pointer text-sm">
+                  من را به خاطر بسپار
+                </Label>
               </div>
 
               <Button

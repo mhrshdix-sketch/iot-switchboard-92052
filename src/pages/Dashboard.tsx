@@ -1,5 +1,6 @@
 import { useMqtt } from '@/contexts/MqttContext';
 import { SwitchButton } from '@/components/SwitchButton';
+import { ButtonCard } from '@/components/ButtonCard';
 import { Button } from '@/components/ui/button';
 import { Plus, ToggleLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -48,7 +49,7 @@ const SortableSwitch = ({ switchPanel }: SortableSwitchProps) => {
 };
 
 const Dashboard = () => {
-  const { switches, updateSwitch } = useMqtt();
+  const { switches, buttonPanels, updateSwitch } = useMqtt();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -67,6 +68,11 @@ const Dashboard = () => {
     const orderB = b.order ?? 999;
     return orderA - orderB;
   });
+
+  const allPanels = [
+    ...sortedSwitches.map(s => ({ ...s, type: 'switch' as const })),
+    ...buttonPanels.map(b => ({ ...b, type: 'button' as const }))
+  ];
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -88,7 +94,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background safe-top safe-bottom">
       <div className="container mx-auto px-4 py-6 safe-right safe-left" dir="rtl">
 
-        {switches.length === 0 ? (
+        {allPanels.length === 0 ? (
           <Card className="gradient-card border-border/50 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-20 h-20 rounded-2xl gradient-secondary flex items-center justify-center mb-4 shadow-glow">
@@ -119,6 +125,9 @@ const Dashboard = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {sortedSwitches.map(switchPanel => (
                   <SortableSwitch key={switchPanel.id} switchPanel={switchPanel} />
+                ))}
+                {buttonPanels.map(buttonPanel => (
+                  <ButtonCard key={buttonPanel.id} buttonPanel={buttonPanel} />
                 ))}
               </div>
             </SortableContext>

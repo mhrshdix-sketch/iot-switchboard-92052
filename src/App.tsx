@@ -8,10 +8,12 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Menu } from "lucide-react";
+import { Cpu } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Connections from "./pages/Connections";
 import Switches from "./pages/Switches";
+import ButtonPanels from "./pages/ButtonPanels";
+import UriLauncher from "./pages/UriLauncher";
 import DataManagement from "./pages/DataManagement";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
@@ -32,9 +34,9 @@ const ProtectedRoutes = () => {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
-            <div className="flex h-14 items-center px-4 safe-right safe-left">
+            <div className="flex h-14 items-center px-4 safe-right safe-left justify-end">
               <SidebarTrigger className="hover:bg-accent rounded-lg p-2 transition-colors">
-                <Menu className="w-5 h-5" />
+                <Cpu className="w-5 h-5" />
               </SidebarTrigger>
             </div>
           </header>
@@ -43,6 +45,8 @@ const ProtectedRoutes = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/connections" element={<Connections />} />
               <Route path="/switches" element={<Switches />} />
+              <Route path="/button-panels" element={<ButtonPanels />} />
+              <Route path="/uri-launcher" element={<UriLauncher />} />
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />

@@ -36,8 +36,6 @@ const sizeOptions = [
   { value: 'xl', label: 'خیلی بزرگ' },
 ];
 
-const emojiPresets: string[] = [];
-
 export const SwitchPanelSettings = ({
   switchPanel,
   open,
@@ -48,6 +46,7 @@ export const SwitchPanelSettings = ({
   const [icon, setIcon] = useState(switchPanel.icon || '💡');
   const [colorOn, setColorOn] = useState(switchPanel.colorOn || '#22c55e');
   const [name, setName] = useState(switchPanel.name);
+  const [retain, setRetain] = useState(switchPanel.retain || false);
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -59,6 +58,7 @@ export const SwitchPanelSettings = ({
       size: size as 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl',
       icon,
       colorOn,
+      retain,
     });
     toast.success('تنظیمات با موفقیت ذخیره شد');
     onOpenChange(false);
@@ -126,6 +126,19 @@ export const SwitchPanelSettings = ({
                 className="w-24"
               />
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="retain-setting"
+              type="checkbox"
+              checked={retain}
+              onChange={(e) => setRetain(e.target.checked)}
+              className="w-4 h-4 rounded border-border cursor-pointer"
+            />
+            <Label htmlFor="retain-setting" className="cursor-pointer">
+              Retain
+            </Label>
           </div>
         </div>
 

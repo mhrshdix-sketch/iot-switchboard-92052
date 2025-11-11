@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import mqtt, { MqttClient } from 'mqtt';
-import { Connection, SwitchPanel, ConnectionStatus } from '@/types/mqtt';
+import { Connection, SwitchPanel, ButtonPanel, UriLauncherPanel, ConnectionStatus } from '@/types/mqtt';
 import { storage } from '@/lib/storage';
 import { toast } from 'sonner';
 
 interface MqttContextType {
   connections: Connection[];
   switches: SwitchPanel[];
+  buttonPanels: ButtonPanel[];
+  uriLaunchers: UriLauncherPanel[];
   clients: Map<string, MqttClient>;
   addConnection: (connection: Omit<Connection, 'id' | 'status' | 'createdAt'>) => void;
   updateConnection: (id: string, updates: Partial<Connection>) => void;
@@ -17,6 +19,14 @@ interface MqttContextType {
   updateSwitch: (id: string, updates: Partial<SwitchPanel>) => void;
   deleteSwitch: (id: string) => void;
   toggleSwitch: (switchId: string) => void;
+  addButtonPanel: (buttonPanel: Omit<ButtonPanel, 'id'>) => void;
+  updateButtonPanel: (id: string, updates: Partial<ButtonPanel>) => void;
+  deleteButtonPanel: (id: string) => void;
+  triggerButton: (id: string) => void;
+  addUriLauncher: (uriLauncher: Omit<UriLauncherPanel, 'id' | 'uri'>) => void;
+  updateUriLauncher: (id: string, updates: Partial<UriLauncherPanel>) => void;
+  deleteUriLauncher: (id: string) => void;
+  launchUri: (id: string) => void;
   publishMessage: (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2, retain?: boolean) => void;
 }
 
@@ -25,6 +35,8 @@ const MqttContext = createContext<MqttContextType | undefined>(undefined);
 export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [switches, setSwitches] = useState<SwitchPanel[]>([]);
+  const [buttonPanels, setButtonPanels] = useState<ButtonPanel[]>([]);
+  const [uriLaunchers, setUriLaunchers] = useState<UriLauncherPanel[]>([]);
   const [clients, setClients] = useState<Map<string, MqttClient>>(new Map());
 
   useEffect(() => {
@@ -32,6 +44,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadedSwitches = storage.getSwitches();
     setConnections(loadedConnections);
     setSwitches(loadedSwitches);
+
+    const savedButtons = localStorage.getItem('mqtt_button_panels');
+    if (savedButtons) setButtonPanels(JSON.parse(savedButtons));
+    
+    const savedUris = localStorage.getItem('mqtt_uri_launchers');
+    if (savedUris) setUriLaunchers(JSON.parse(savedUris));
 
     // Auto-connect to brokers
     loadedConnections.forEach(conn => {
@@ -44,6 +62,14 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clients.forEach(client => client.end());
     };
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mqtt_button_panels', JSON.stringify(buttonPanels));
+  }, [buttonPanels]);
+
+  useEffect(() => {
+    localStorage.setItem('mqtt_uri_launchers', JSON.stringify(uriLaunchers));
+  }, [uriLaunchers]);
 
   const updateConnectionStatus = (id: string, status: ConnectionStatus) => {
     setConnections(prev => 
@@ -97,6 +123,19 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           });
         });
+
+        // Subscribe to URI launcher topics
+        const savedUris = localStorage.getItem('mqtt_uri_launchers');
+        if (savedUris) {
+          const uris: UriLauncherPanel[] = JSON.parse(savedUris);
+          uris.filter(u => u.connectionId === connectionId).forEach(uri => {
+            client.subscribe(uri.topic, { qos: uri.qos }, (err) => {
+              if (err) {
+                console.error(`Failed to subscribe to ${uri.topic}:`, err);
+              }
+            });
+          });
+        }
       });
 
       client.on('error', (error) => {
@@ -120,6 +159,14 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const newState = payload === sw.payloadOn;
           updateSwitch(sw.id, { state: newState, lastUpdated: new Date().toISOString() });
         }
+
+        // Update URI launcher
+        setUriLaunchers(prev => prev.map(uri => {
+          if (uri.topic === topic && uri.connectionId === connectionId) {
+            return { ...uri, uri: message.toString() };
+          }
+          return uri;
+        }));
       });
 
       setClients(prev => {
@@ -181,6 +228,8 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     storage.deleteConnection(id);
     setConnections(prev => prev.filter(c => c.id !== id));
     setSwitches(prev => prev.filter(s => s.connectionId !== id));
+    setButtonPanels(prev => prev.filter(b => b.connectionId !== id));
+    setUriLaunchers(prev => prev.filter(u => u.connectionId !== id));
     
     const connection = connections.find(c => c.id === id);
     if (connection) {
@@ -260,10 +309,95 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  // Button Panel functions
+  const addButtonPanel = (buttonPanel: Omit<ButtonPanel, 'id'>) => {
+    const newButton: ButtonPanel = {
+      ...buttonPanel,
+      id: `button_${Date.now()}`,
+    };
+    setButtonPanels(prev => [...prev, newButton]);
+    toast.success(`دکمه ${newButton.name} ایجاد شد`);
+  };
+
+  const updateButtonPanel = (id: string, updates: Partial<ButtonPanel>) => {
+    setButtonPanels(prev => 
+      prev.map(btn => btn.id === id ? { ...btn, ...updates } : btn)
+    );
+  };
+
+  const deleteButtonPanel = (id: string) => {
+    const btn = buttonPanels.find(b => b.id === id);
+    setButtonPanels(prev => prev.filter(b => b.id !== id));
+    if (btn) {
+      toast.success(`دکمه ${btn.name} حذف شد`);
+    }
+  };
+
+  const triggerButton = (id: string) => {
+    const btn = buttonPanels.find(b => b.id === id);
+    if (!btn) return;
+
+    publishMessage(btn.connectionId, btn.topic, btn.payload, btn.qos, btn.retain);
+    toast.success(`دکمه ${btn.name} فعال شد`);
+  };
+
+  // URI Launcher functions
+  const addUriLauncher = (uriLauncher: Omit<UriLauncherPanel, 'id' | 'uri'>) => {
+    const newUri: UriLauncherPanel = {
+      ...uriLauncher,
+      id: `uri_${Date.now()}`,
+    };
+    setUriLaunchers(prev => [...prev, newUri]);
+
+    // Subscribe to topic if connection is active
+    const client = clients.get(uriLauncher.connectionId);
+    if (client && client.connected) {
+      client.subscribe(newUri.topic, { qos: newUri.qos });
+    }
+
+    toast.success(`پنل ${newUri.name} ایجاد شد`);
+  };
+
+  const updateUriLauncher = (id: string, updates: Partial<UriLauncherPanel>) => {
+    setUriLaunchers(prev => 
+      prev.map(uri => uri.id === id ? { ...uri, ...updates } : uri)
+    );
+  };
+
+  const deleteUriLauncher = (id: string) => {
+    const uri = uriLaunchers.find(u => u.id === id);
+    
+    // Unsubscribe from topic
+    if (uri) {
+      const client = clients.get(uri.connectionId);
+      if (client && client.connected) {
+        client.unsubscribe(uri.topic);
+      }
+    }
+
+    setUriLaunchers(prev => prev.filter(u => u.id !== id));
+    
+    if (uri) {
+      toast.success(`پنل ${uri.name} حذف شد`);
+    }
+  };
+
+  const launchUri = (id: string) => {
+    const uri = uriLaunchers.find(u => u.id === id);
+    if (uri && uri.uri) {
+      window.open(uri.uri, '_blank');
+      toast.success('URI باز شد');
+    } else {
+      toast.error('URI دریافت نشده است');
+    }
+  };
+
   return (
     <MqttContext.Provider value={{
       connections,
       switches,
+      buttonPanels,
+      uriLaunchers,
       clients,
       addConnection,
       updateConnection,
@@ -274,6 +408,14 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateSwitch,
       deleteSwitch,
       toggleSwitch,
+      addButtonPanel,
+      updateButtonPanel,
+      deleteButtonPanel,
+      triggerButton,
+      addUriLauncher,
+      updateUriLauncher,
+      deleteUriLauncher,
+      launchUri,
       publishMessage,
     }}>
       {children}

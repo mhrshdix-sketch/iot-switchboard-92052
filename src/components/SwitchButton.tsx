@@ -37,7 +37,8 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
     }
   }, [isActive]);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (isConnected) {
       toggleSwitch(switchPanel.id);
     }
@@ -76,7 +77,7 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
   return (
     <>
       <button
-        onClick={handleClick}
+        onPointerDown={handleClick}
         disabled={!isConnected}
         className={cn(
           'relative group overflow-hidden rounded-2xl',

@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Cpu, MousePointerClick, Link2 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,6 +23,8 @@ const items = [
   { title: 'داشبورد', url: '/', icon: Home },
   { title: 'اتصالات', url: '/connections', icon: Wifi },
   { title: 'پنل‌ها', url: '/switches', icon: ToggleLeft },
+  { title: 'Button Panel', url: '/button-panels', icon: MousePointerClick },
+  { title: 'IP دستگاه', url: '/uri-launcher', icon: Link2 },
   { title: 'اطلاعات داشبورد', url: '/data-management', icon: Download },
   { title: 'تنظیمات', url: '/settings', icon: Settings },
 ];
@@ -40,11 +42,11 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-l border-border">
-      <SidebarHeader className="border-b border-border p-4">
+    <Sidebar className="border-l border-border" side="right">
+      <SidebarHeader className="border-b border-border p-4 safe-top safe-right">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg gradient-hero flex items-center justify-center shadow-glow flex-shrink-0">
-            <Wifi className="w-5 h-5 text-white" />
+            <Cpu className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-bold truncate">پنل مدیریت IoT</h2>
@@ -79,15 +81,18 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3">
-        <Button
-          variant="outline"
-          onClick={handleLogout}
-          className="w-full hover:bg-destructive hover:text-destructive-foreground transition-smooth"
-        >
-          <LogOut className="w-4 h-4 ml-2" />
-          خروج
-        </Button>
+      <SidebarFooter className="border-t border-border p-3 safe-bottom safe-right">
+        <div className="flex gap-2">
+          <ThemeToggle />
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="flex-1 hover:bg-destructive hover:text-destructive-foreground transition-smooth"
+          >
+            <LogOut className="w-4 h-4 ml-2" />
+            خروج
+          </Button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
