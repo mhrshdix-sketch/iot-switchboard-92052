@@ -94,8 +94,8 @@ const DataManagement = () => {
 
   return (
     <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-8 safe-right safe-left" dir="rtl">
-        <div className="mb-8">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold mb-2">اطلاعات داشبورد</h1>
           <p className="text-muted-foreground">
             مدیریت، پشتیبان‌گیری و بازیابی تنظیمات

@@ -49,9 +49,9 @@ const Connections = () => {
 
   return (
     <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-8 safe-right safe-left" dir="rtl">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className="w-5 h-5" />

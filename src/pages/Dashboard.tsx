@@ -92,7 +92,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-6 safe-right safe-left" dir="rtl">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
 
         {allPanels.length === 0 ? (
           <Card className="gradient-card border-border/50 border-dashed">

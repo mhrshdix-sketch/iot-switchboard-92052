@@ -48,9 +48,9 @@ const Switches = () => {
 
   return (
     <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-8 safe-right safe-left" dir="rtl">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className="w-5 h-5" />
@@ -191,8 +191,15 @@ const Switches = () => {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <div className="flex items-center justify-between p-4 border rounded-lg border-border">
-                      <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2 p-4 border rounded-lg border-border">
+                      <input
+                        id="retain"
+                        type="checkbox"
+                        checked={formData.retain}
+                        onChange={(e) => setFormData({ ...formData, retain: e.target.checked })}
+                        className="w-4 h-4 rounded border-border cursor-pointer"
+                      />
+                      <div className="flex-1">
                         <Label htmlFor="retain" className="text-base font-medium cursor-pointer">
                           Retain Message
                         </Label>
@@ -200,14 +207,6 @@ const Switches = () => {
                           پیام را در بروکر ذخیره کند تا دستگاه‌های جدید آخرین وضعیت را دریافت کنند
                         </p>
                       </div>
-                      <Switch
-                        id="retain"
-                        checked={formData.retain}
-                        onCheckedChange={(checked) => 
-                          setFormData({ ...formData, retain: checked })
-                        }
-                        className="mr-4"
-                      />
                     </div>
                   </div>
                 </div>
