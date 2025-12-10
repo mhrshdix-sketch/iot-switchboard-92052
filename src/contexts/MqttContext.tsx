@@ -38,10 +38,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [buttonPanels, setButtonPanels] = useState<ButtonPanel[]>([]);
   const [uriLaunchers, setUriLaunchers] = useState<UriLauncherPanel[]>([]);
   const [clients, setClients] = useState<Map<string, MqttClient>>(new Map());
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Refs to always have current state in message handlers (avoids stale closure)
   const switchesRef = useRef<SwitchPanel[]>(switches);
   const uriLaunchersRef = useRef<UriLauncherPanel[]>(uriLaunchers);
+  const clientsRef = useRef<Map<string, MqttClient>>(clients);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -51,6 +53,10 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     uriLaunchersRef.current = uriLaunchers;
   }, [uriLaunchers]);
+
+  useEffect(() => {
+    clientsRef.current = clients;
+  }, [clients]);
 
   // Helper function to update switch state from incoming MQTT message
   const updateSwitchStateFromMessage = useCallback((connectionId: string, topic: string, payload: string) => {
@@ -95,66 +101,51 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   }, []);
 
-  useEffect(() => {
-    const loadedConnections = storage.getConnections();
-    const loadedSwitches = storage.getSwitches();
-    setConnections(loadedConnections);
-    setSwitches(loadedSwitches);
-
-    const savedButtons = localStorage.getItem('mqtt_button_panels');
-    if (savedButtons) setButtonPanels(JSON.parse(savedButtons));
-    
-    const savedUris = localStorage.getItem('mqtt_uri_launchers');
-    if (savedUris) setUriLaunchers(JSON.parse(savedUris));
-
-    // Auto-connect to brokers
-    loadedConnections.forEach(conn => {
-      if (conn.autoConnect) {
-        connectTobroker(conn.id);
-      }
-    });
-
-    return () => {
-      clients.forEach(client => client.end());
-    };
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('mqtt_button_panels', JSON.stringify(buttonPanels));
-  }, [buttonPanels]);
-
-  useEffect(() => {
-    localStorage.setItem('mqtt_uri_launchers', JSON.stringify(uriLaunchers));
-  }, [uriLaunchers]);
-
-  const updateConnectionStatus = (id: string, status: ConnectionStatus) => {
+  const updateConnectionStatus = useCallback((id: string, status: ConnectionStatus) => {
     setConnections(prev => 
       prev.map(conn => conn.id === id ? { ...conn, status } : conn)
     );
     storage.updateConnection(id, { status });
-  };
+  }, []);
 
+  // Core connection function that reads directly from storage
   const connectTobroker = useCallback(async (connectionId: string) => {
-    const connection = connections.find(c => c.id === connectionId) || 
-                       storage.getConnections().find(c => c.id === connectionId);
+    // Always read fresh connection data from storage to avoid stale state
+    const allConnections = storage.getConnections();
+    const connection = allConnections.find(c => c.id === connectionId);
     
-    if (!connection) return;
+    if (!connection) {
+      console.error(`Connection ${connectionId} not found in storage`);
+      toast.error('اتصال یافت نشد');
+      return;
+    }
+
+    // Check if already connected
+    const existingClient = clientsRef.current.get(connectionId);
+    if (existingClient && existingClient.connected) {
+      console.log(`Already connected to ${connection.name}`);
+      return;
+    }
 
     try {
       updateConnectionStatus(connectionId, 'connecting');
 
+      // Build broker URL based on protocol
       let brokerUrl: string;
       if (connection.protocol === 'websocket-secure') {
         const path = connection.path || '/mqtt';
         brokerUrl = `wss://${connection.brokerAddress}:${connection.port}${path}`;
       } else {
-        brokerUrl = `mqtts://${connection.brokerAddress}:${connection.port}`;
+        // tcp-ssl protocol
+        brokerUrl = `wss://${connection.brokerAddress}:${connection.port}/mqtt`;
       }
+
+      console.log(`Connecting to broker: ${brokerUrl}`);
 
       const options: mqtt.IClientOptions = {
         clientId: connection.clientId || `mqtt_${Math.random().toString(16).slice(2, 10)}`,
-        username: connection.username,
-        password: connection.password,
+        username: connection.username || undefined,
+        password: connection.password || undefined,
         clean: connection.cleanSession,
         reconnectPeriod: 5000,
         keepalive: 60,
@@ -163,6 +154,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         rejectUnauthorized: false,
       };
 
+      // Remove undefined values
+      if (!options.username) delete options.username;
+      if (!options.password) delete options.password;
+
+      console.log('Connection options:', { ...options, password: options.password ? '***' : undefined });
+
       const client = mqtt.connect(brokerUrl, options);
 
       client.on('connect', () => {
@@ -170,12 +167,16 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateConnectionStatus(connectionId, 'connected');
         toast.success(`متصل شد به ${connection.name}`);
 
-        // Subscribe to switch topics
-        const connectionSwitches = storage.getSwitchesByConnection(connectionId);
-        connectionSwitches.forEach(sw => {
+        // Subscribe to ALL switch topics for this connection
+        const allSwitches = storage.getSwitchesByConnection(connectionId);
+        console.log(`Subscribing to ${allSwitches.length} switch topics`);
+        
+        allSwitches.forEach(sw => {
           client.subscribe(sw.topic, { qos: sw.qos }, (err) => {
             if (err) {
               console.error(`Failed to subscribe to ${sw.topic}:`, err);
+            } else {
+              console.log(`Subscribed to ${sw.topic}`);
             }
           });
         });
@@ -184,10 +185,15 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const savedUris = localStorage.getItem('mqtt_uri_launchers');
         if (savedUris) {
           const uris: UriLauncherPanel[] = JSON.parse(savedUris);
-          uris.filter(u => u.connectionId === connectionId).forEach(uri => {
+          const connectionUris = uris.filter(u => u.connectionId === connectionId);
+          console.log(`Subscribing to ${connectionUris.length} URI launcher topics`);
+          
+          connectionUris.forEach(uri => {
             client.subscribe(uri.topic, { qos: uri.qos }, (err) => {
               if (err) {
                 console.error(`Failed to subscribe to ${uri.topic}:`, err);
+              } else {
+                console.log(`Subscribed to URI topic ${uri.topic}`);
               }
             });
           });
@@ -197,11 +203,21 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       client.on('error', (error) => {
         console.error(`Connection error for ${connection.name}:`, error);
         updateConnectionStatus(connectionId, 'disconnected');
-        toast.error(`خطا در اتصال به ${connection.name}`);
+        toast.error(`خطا در اتصال به ${connection.name}: ${error.message}`);
       });
 
       client.on('close', () => {
         console.log(`Disconnected from ${connection.name}`);
+        updateConnectionStatus(connectionId, 'disconnected');
+      });
+
+      client.on('reconnect', () => {
+        console.log(`Reconnecting to ${connection.name}...`);
+        updateConnectionStatus(connectionId, 'connecting');
+      });
+
+      client.on('offline', () => {
+        console.log(`Client offline: ${connection.name}`);
         updateConnectionStatus(connectionId, 'disconnected');
       });
 
@@ -216,17 +232,60 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateUriLauncherFromMessage(connectionId, topic, payload);
       });
 
+      // Store the client
       setClients(prev => {
         const newClients = new Map(prev);
         newClients.set(connectionId, client);
         return newClients;
       });
+
     } catch (error) {
       console.error(`Failed to connect to ${connection.name}:`, error);
       updateConnectionStatus(connectionId, 'disconnected');
       toast.error(`خطا در اتصال به ${connection.name}`);
     }
-  }, [connections, updateSwitchStateFromMessage, updateUriLauncherFromMessage]);
+  }, [updateConnectionStatus, updateSwitchStateFromMessage, updateUriLauncherFromMessage]);
+
+  // Load data from storage on mount
+  useEffect(() => {
+    const loadedConnections = storage.getConnections();
+    const loadedSwitches = storage.getSwitches();
+    setConnections(loadedConnections);
+    setSwitches(loadedSwitches);
+
+    const savedButtons = localStorage.getItem('mqtt_button_panels');
+    if (savedButtons) setButtonPanels(JSON.parse(savedButtons));
+    
+    const savedUris = localStorage.getItem('mqtt_uri_launchers');
+    if (savedUris) setUriLaunchers(JSON.parse(savedUris));
+
+    setIsInitialized(true);
+
+    return () => {
+      clientsRef.current.forEach(client => client.end());
+    };
+  }, []);
+
+  // Auto-connect after initialization
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const allConnections = storage.getConnections();
+    allConnections.forEach(conn => {
+      if (conn.autoConnect) {
+        console.log(`Auto-connecting to ${conn.name}`);
+        connectTobroker(conn.id);
+      }
+    });
+  }, [isInitialized, connectTobroker]);
+
+  useEffect(() => {
+    localStorage.setItem('mqtt_button_panels', JSON.stringify(buttonPanels));
+  }, [buttonPanels]);
+
+  useEffect(() => {
+    localStorage.setItem('mqtt_uri_launchers', JSON.stringify(uriLaunchers));
+  }, [uriLaunchers]);
 
   const disconnectFromBroker = useCallback((connectionId: string) => {
     const client = clients.get(connectionId);
@@ -244,9 +303,9 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.info(`قطع اتصال از ${connection.name}`);
       }
     }
-  }, [clients, connections]);
+  }, [clients, connections, updateConnectionStatus]);
 
-  const addConnection = (connection: Omit<Connection, 'id' | 'status' | 'createdAt'>) => {
+  const addConnection = useCallback((connection: Omit<Connection, 'id' | 'status' | 'createdAt'>) => {
     const newConnection: Connection = {
       ...connection,
       id: `conn_${Date.now()}`,
@@ -257,20 +316,24 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setConnections(prev => [...prev, newConnection]);
     
     if (newConnection.autoConnect) {
-      connectTobroker(newConnection.id);
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        connectTobroker(newConnection.id);
+      }, 100);
     }
     
     toast.success(`اتصال ${newConnection.name} ایجاد شد`);
-  };
+  }, [connectTobroker]);
 
-  const updateConnection = (id: string, updates: Partial<Connection>) => {
+  const updateConnection = useCallback((id: string, updates: Partial<Connection>) => {
     storage.updateConnection(id, updates);
     setConnections(prev => 
       prev.map(conn => conn.id === id ? { ...conn, ...updates } : conn)
     );
-  };
+  }, []);
 
-  const deleteConnection = (id: string) => {
+  const deleteConnection = useCallback((id: string) => {
+    const connection = connections.find(c => c.id === id);
     disconnectFromBroker(id);
     storage.deleteConnection(id);
     setConnections(prev => prev.filter(c => c.id !== id));
@@ -278,13 +341,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setButtonPanels(prev => prev.filter(b => b.connectionId !== id));
     setUriLaunchers(prev => prev.filter(u => u.connectionId !== id));
     
-    const connection = connections.find(c => c.id === id);
     if (connection) {
       toast.success(`اتصال ${connection.name} حذف شد`);
     }
-  };
+  }, [connections, disconnectFromBroker]);
 
-  const addSwitch = (switchPanel: Omit<SwitchPanel, 'id' | 'state'>) => {
+  const addSwitch = useCallback((switchPanel: Omit<SwitchPanel, 'id' | 'state'>) => {
     const newSwitch: SwitchPanel = {
       ...switchPanel,
       id: `switch_${Date.now()}`,
@@ -294,27 +356,33 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSwitches(prev => [...prev, newSwitch]);
     
     // Subscribe to topic if connection is active
-    const client = clients.get(switchPanel.connectionId);
+    const client = clientsRef.current.get(switchPanel.connectionId);
     if (client && client.connected) {
-      client.subscribe(newSwitch.topic, { qos: newSwitch.qos });
+      client.subscribe(newSwitch.topic, { qos: newSwitch.qos }, (err) => {
+        if (err) {
+          console.error(`Failed to subscribe to ${newSwitch.topic}:`, err);
+        } else {
+          console.log(`Subscribed to new switch topic ${newSwitch.topic}`);
+        }
+      });
     }
     
     toast.success(`پنل ${newSwitch.name} ایجاد شد`);
-  };
+  }, []);
 
-  const updateSwitch = (id: string, updates: Partial<SwitchPanel>) => {
+  const updateSwitch = useCallback((id: string, updates: Partial<SwitchPanel>) => {
     storage.updateSwitch(id, updates);
     setSwitches(prev => 
       prev.map(sw => sw.id === id ? { ...sw, ...updates } : sw)
     );
-  };
+  }, []);
 
-  const deleteSwitch = (id: string) => {
-    const sw = switches.find(s => s.id === id);
+  const deleteSwitch = useCallback((id: string) => {
+    const sw = switchesRef.current.find(s => s.id === id);
     
     // Unsubscribe from topic
     if (sw) {
-      const client = clients.get(sw.connectionId);
+      const client = clientsRef.current.get(sw.connectionId);
       if (client && client.connected) {
         client.unsubscribe(sw.topic);
       }
@@ -326,11 +394,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (sw) {
       toast.success(`پنل ${sw.name} حذف شد`);
     }
-  };
+  }, []);
 
-  const publishMessage = (connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2, retain?: boolean) => {
-    const client = clients.get(connectionId);
+  const publishMessage = useCallback((connectionId: string, topic: string, payload: string, qos: 0 | 1 | 2, retain?: boolean) => {
+    const client = clientsRef.current.get(connectionId);
     if (client && client.connected) {
+      console.log(`Publishing to ${topic}: ${payload} (retain: ${retain || false})`);
       client.publish(topic, payload, { qos, retain: retain || false }, (err) => {
         if (err) {
           console.error('Publish error:', err);
@@ -340,10 +409,10 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       toast.error('اتصال برقرار نیست');
     }
-  };
+  }, []);
 
-  const toggleSwitch = (switchId: string) => {
-    const sw = switches.find(s => s.id === switchId);
+  const toggleSwitch = useCallback((switchId: string) => {
+    const sw = switchesRef.current.find(s => s.id === switchId);
     if (!sw) return;
 
     const newState = !sw.state;
@@ -354,42 +423,46 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       state: newState, 
       lastUpdated: new Date().toISOString() 
     });
-  };
+  }, [publishMessage, updateSwitch]);
 
   // Button Panel functions
-  const addButtonPanel = (buttonPanel: Omit<ButtonPanel, 'id'>) => {
+  const addButtonPanel = useCallback((buttonPanel: Omit<ButtonPanel, 'id'>) => {
     const newButton: ButtonPanel = {
       ...buttonPanel,
       id: `button_${Date.now()}`,
     };
     setButtonPanels(prev => [...prev, newButton]);
     toast.success(`دکمه ${newButton.name} ایجاد شد`);
-  };
+  }, []);
 
-  const updateButtonPanel = (id: string, updates: Partial<ButtonPanel>) => {
+  const updateButtonPanel = useCallback((id: string, updates: Partial<ButtonPanel>) => {
     setButtonPanels(prev => 
       prev.map(btn => btn.id === id ? { ...btn, ...updates } : btn)
     );
-  };
+  }, []);
 
-  const deleteButtonPanel = (id: string) => {
+  const deleteButtonPanel = useCallback((id: string) => {
     const btn = buttonPanels.find(b => b.id === id);
     setButtonPanels(prev => prev.filter(b => b.id !== id));
     if (btn) {
       toast.success(`دکمه ${btn.name} حذف شد`);
     }
-  };
+  }, [buttonPanels]);
 
-  const triggerButton = (id: string) => {
-    const btn = buttonPanels.find(b => b.id === id);
+  const triggerButton = useCallback((id: string) => {
+    const savedButtons = localStorage.getItem('mqtt_button_panels');
+    if (!savedButtons) return;
+    
+    const buttons: ButtonPanel[] = JSON.parse(savedButtons);
+    const btn = buttons.find(b => b.id === id);
     if (!btn) return;
 
     publishMessage(btn.connectionId, btn.topic, btn.payload, btn.qos, btn.retain);
     toast.success(`دکمه ${btn.name} فعال شد`);
-  };
+  }, [publishMessage]);
 
   // URI Launcher functions
-  const addUriLauncher = (uriLauncher: Omit<UriLauncherPanel, 'id' | 'uri'>) => {
+  const addUriLauncher = useCallback((uriLauncher: Omit<UriLauncherPanel, 'id' | 'uri'>) => {
     const newUri: UriLauncherPanel = {
       ...uriLauncher,
       id: `uri_${Date.now()}`,
@@ -397,26 +470,32 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUriLaunchers(prev => [...prev, newUri]);
 
     // Subscribe to topic if connection is active
-    const client = clients.get(uriLauncher.connectionId);
+    const client = clientsRef.current.get(uriLauncher.connectionId);
     if (client && client.connected) {
-      client.subscribe(newUri.topic, { qos: newUri.qos });
+      client.subscribe(newUri.topic, { qos: newUri.qos }, (err) => {
+        if (err) {
+          console.error(`Failed to subscribe to ${newUri.topic}:`, err);
+        } else {
+          console.log(`Subscribed to URI topic ${newUri.topic}`);
+        }
+      });
     }
 
     toast.success(`پنل ${newUri.name} ایجاد شد`);
-  };
+  }, []);
 
-  const updateUriLauncher = (id: string, updates: Partial<UriLauncherPanel>) => {
+  const updateUriLauncher = useCallback((id: string, updates: Partial<UriLauncherPanel>) => {
     setUriLaunchers(prev => 
       prev.map(uri => uri.id === id ? { ...uri, ...updates } : uri)
     );
-  };
+  }, []);
 
-  const deleteUriLauncher = (id: string) => {
-    const uri = uriLaunchers.find(u => u.id === id);
+  const deleteUriLauncher = useCallback((id: string) => {
+    const uri = uriLaunchersRef.current.find(u => u.id === id);
     
     // Unsubscribe from topic
     if (uri) {
-      const client = clients.get(uri.connectionId);
+      const client = clientsRef.current.get(uri.connectionId);
       if (client && client.connected) {
         client.unsubscribe(uri.topic);
       }
@@ -427,17 +506,17 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (uri) {
       toast.success(`پنل ${uri.name} حذف شد`);
     }
-  };
+  }, []);
 
-  const launchUri = (id: string) => {
-    const uri = uriLaunchers.find(u => u.id === id);
+  const launchUri = useCallback((id: string) => {
+    const uri = uriLaunchersRef.current.find(u => u.id === id);
     if (uri && uri.uri) {
       window.open(uri.uri, '_blank');
       toast.success('URI باز شد');
     } else {
       toast.error('URI دریافت نشده است');
     }
-  };
+  }, []);
 
   return (
     <MqttContext.Provider value={{
