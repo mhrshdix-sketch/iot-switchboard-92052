@@ -23,6 +23,7 @@ export interface SwitchPanel {
   connectionId: string;
   name: string;
   topic: string;
+  subscribeTopic?: string; // Optional: separate topic for receiving status updates
   payloadOn: string;
   payloadOff: string;
   qos: QoSLevel;

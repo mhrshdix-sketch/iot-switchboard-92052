@@ -61,21 +61,29 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper function to update switch state from incoming MQTT message
   const updateSwitchStateFromMessage = useCallback((connectionId: string, topic: string, payload: string) => {
     const currentSwitches = switchesRef.current;
-    const matchingSwitches = currentSwitches.filter(
-      sw => sw.topic === topic && sw.connectionId === connectionId
-    );
+    
+    // Match by subscribeTopic (if set) OR by topic (for backwards compatibility)
+    const matchingSwitches = currentSwitches.filter(sw => {
+      const subscribeToTopic = sw.subscribeTopic || sw.topic;
+      return subscribeToTopic === topic && sw.connectionId === connectionId;
+    });
 
     matchingSwitches.forEach(sw => {
       let newState: boolean | null = null;
       
-      if (payload === sw.payloadOn) {
+      // Trim payloads for comparison to avoid whitespace issues
+      const trimmedPayload = payload.trim();
+      const payloadOn = sw.payloadOn.trim();
+      const payloadOff = sw.payloadOff.trim();
+      
+      if (trimmedPayload === payloadOn) {
         newState = true;
-      } else if (payload === sw.payloadOff) {
+      } else if (trimmedPayload === payloadOff) {
         newState = false;
       }
 
       if (newState !== null && newState !== sw.state) {
-        console.log(`Updating switch ${sw.name} state to ${newState} (payload: ${payload})`);
+        console.log(`✅ Updating switch "${sw.name}" state: ${sw.state} → ${newState} (received: "${trimmedPayload}")`);
         
         // Update state directly with functional update
         setSwitches(prev => 
@@ -87,6 +95,8 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Also update storage
         storage.updateSwitch(sw.id, { state: newState, lastUpdated: new Date().toISOString() });
+      } else if (newState === null) {
+        console.log(`⚠️ Received message on ${topic} with payload "${trimmedPayload}" but doesn't match payloadOn="${payloadOn}" or payloadOff="${payloadOff}"`);
       }
     });
   }, []);
@@ -130,35 +140,38 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       updateConnectionStatus(connectionId, 'connecting');
 
-      // Build broker URL based on protocol
-      let brokerUrl: string;
-      if (connection.protocol === 'websocket-secure') {
-        const path = connection.path || '/mqtt';
-        brokerUrl = `wss://${connection.brokerAddress}:${connection.port}${path}`;
-      } else {
-        // tcp-ssl protocol
-        brokerUrl = `wss://${connection.brokerAddress}:${connection.port}/mqtt`;
-      }
+      // Build broker URL - browsers only support WebSocket connections
+      // Both protocols use WSS in browser environment
+      const path = connection.path || '/mqtt';
+      const brokerUrl = `wss://${connection.brokerAddress}:${connection.port}${path}`;
 
       console.log(`Connecting to broker: ${brokerUrl}`);
+      console.log(`Connection details: protocol=${connection.protocol}, address=${connection.brokerAddress}, port=${connection.port}`);
 
       const options: mqtt.IClientOptions = {
-        clientId: connection.clientId || `mqtt_${Math.random().toString(16).slice(2, 10)}`,
-        username: connection.username || undefined,
-        password: connection.password || undefined,
+        clientId: connection.clientId || `iot_dashboard_${Math.random().toString(16).slice(2, 10)}`,
         clean: connection.cleanSession,
         reconnectPeriod: 5000,
         keepalive: 60,
         connectTimeout: 30000,
-        protocolVersion: 5,
+        protocolVersion: 4, // MQTT 3.1.1 - more compatible with most brokers
         rejectUnauthorized: false,
       };
 
-      // Remove undefined values
-      if (!options.username) delete options.username;
-      if (!options.password) delete options.password;
+      // Only add credentials if they exist and are not empty strings
+      if (connection.username && connection.username.trim()) {
+        options.username = connection.username.trim();
+      }
+      if (connection.password && connection.password.trim()) {
+        options.password = connection.password.trim();
+      }
 
-      console.log('Connection options:', { ...options, password: options.password ? '***' : undefined });
+      console.log('Connection options:', { 
+        ...options, 
+        password: options.password ? '***' : undefined,
+        hasUsername: !!options.username,
+        hasPassword: !!options.password
+      });
 
       const client = mqtt.connect(brokerUrl, options);
 
@@ -169,14 +182,16 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Subscribe to ALL switch topics for this connection
         const allSwitches = storage.getSwitchesByConnection(connectionId);
-        console.log(`Subscribing to ${allSwitches.length} switch topics`);
+        console.log(`📡 Subscribing to ${allSwitches.length} switch topics for connection ${connection.name}`);
         
         allSwitches.forEach(sw => {
-          client.subscribe(sw.topic, { qos: sw.qos }, (err) => {
+          // Use subscribeTopic if available, otherwise use topic
+          const subscribeToTopic = sw.subscribeTopic || sw.topic;
+          client.subscribe(subscribeToTopic, { qos: sw.qos }, (err) => {
             if (err) {
-              console.error(`Failed to subscribe to ${sw.topic}:`, err);
+              console.error(`❌ Failed to subscribe to ${subscribeToTopic}:`, err);
             } else {
-              console.log(`Subscribed to ${sw.topic}`);
+              console.log(`✅ Subscribed to switch topic: ${subscribeToTopic} (panel: ${sw.name})`);
             }
           });
         });
@@ -221,9 +236,10 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateConnectionStatus(connectionId, 'disconnected');
       });
 
-      client.on('message', (topic, message) => {
+      client.on('message', (topic, message, packet) => {
         const payload = message.toString();
-        console.log(`Message received on ${topic}:`, payload);
+        const isRetained = packet.retain;
+        console.log(`📨 Message received on "${topic}": "${payload}" (retained: ${isRetained})`);
         
         // Update switch states using the helper (uses refs for current state)
         updateSwitchStateFromMessage(connectionId, topic, payload);
@@ -358,11 +374,12 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Subscribe to topic if connection is active
     const client = clientsRef.current.get(switchPanel.connectionId);
     if (client && client.connected) {
-      client.subscribe(newSwitch.topic, { qos: newSwitch.qos }, (err) => {
+      const subscribeToTopic = newSwitch.subscribeTopic || newSwitch.topic;
+      client.subscribe(subscribeToTopic, { qos: newSwitch.qos }, (err) => {
         if (err) {
-          console.error(`Failed to subscribe to ${newSwitch.topic}:`, err);
+          console.error(`❌ Failed to subscribe to ${subscribeToTopic}:`, err);
         } else {
-          console.log(`Subscribed to new switch topic ${newSwitch.topic}`);
+          console.log(`✅ Subscribed to new switch topic: ${subscribeToTopic}`);
         }
       });
     }
@@ -384,7 +401,8 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (sw) {
       const client = clientsRef.current.get(sw.connectionId);
       if (client && client.connected) {
-        client.unsubscribe(sw.topic);
+        const subscribeToTopic = sw.subscribeTopic || sw.topic;
+        client.unsubscribe(subscribeToTopic);
       }
     }
     
