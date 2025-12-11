@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import mqtt, { MqttClient } from 'mqtt';
 import { Connection, SwitchPanel, ButtonPanel, UriLauncherPanel, ConnectionStatus } from '@/types/mqtt';
 import { storage } from '@/lib/storage';
@@ -38,6 +38,19 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [buttonPanels, setButtonPanels] = useState<ButtonPanel[]>([]);
   const [uriLaunchers, setUriLaunchers] = useState<UriLauncherPanel[]>([]);
   const [clients, setClients] = useState<Map<string, MqttClient>>(new Map());
+
+  // Refs to always have access to latest state in callbacks (fixes stale closure)
+  const switchesRef = useRef<SwitchPanel[]>([]);
+  const uriLaunchersRef = useRef<UriLauncherPanel[]>([]);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    switchesRef.current = switches;
+  }, [switches]);
+
+  useEffect(() => {
+    uriLaunchersRef.current = uriLaunchers;
+  }, [uriLaunchers]);
 
   useEffect(() => {
     const loadedConnections = storage.getConnections();
@@ -150,23 +163,35 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       client.on('message', (topic, message) => {
-        console.log(`Message received on ${topic}:`, message.toString());
+        const payload = message.toString().trim();
+        console.log(`📨 Message received on ${topic}:`, payload);
         
-        // Update switch state based on received message
-        const sw = switches.find(s => s.topic === topic && s.connectionId === connectionId);
+        // Use ref to get current switches (fixes stale closure)
+        const currentSwitches = switchesRef.current;
+        const sw = currentSwitches.find(s => s.topic === topic && s.connectionId === connectionId);
+        
         if (sw) {
-          const payload = message.toString();
           const newState = payload === sw.payloadOn;
-          updateSwitch(sw.id, { state: newState, lastUpdated: new Date().toISOString() });
+          console.log(`🔄 Updating switch "${sw.name}" state to:`, newState, `(payload: "${payload}", payloadOn: "${sw.payloadOn}")`);
+          
+          // Update both storage and state
+          storage.updateSwitch(sw.id, { state: newState, lastUpdated: new Date().toISOString() });
+          setSwitches(prev => 
+            prev.map(s => s.id === sw.id ? { ...s, state: newState, lastUpdated: new Date().toISOString() } : s)
+          );
         }
 
-        // Update URI launcher
-        setUriLaunchers(prev => prev.map(uri => {
-          if (uri.topic === topic && uri.connectionId === connectionId) {
-            return { ...uri, uri: message.toString() };
-          }
-          return uri;
-        }));
+        // Update URI launcher using ref
+        const currentUriLaunchers = uriLaunchersRef.current;
+        const uri = currentUriLaunchers.find(u => u.topic === topic && u.connectionId === connectionId);
+        if (uri) {
+          setUriLaunchers(prev => prev.map(u => {
+            if (u.id === uri.id) {
+              return { ...u, uri: payload };
+            }
+            return u;
+          }));
+        }
       });
 
       setClients(prev => {
@@ -179,7 +204,7 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateConnectionStatus(connectionId, 'disconnected');
       toast.error(`خطا در اتصال به ${connection.name}`);
     }
-  }, [connections, switches]);
+  }, [connections]);
 
   const disconnectFromBroker = useCallback((connectionId: string) => {
     const client = clients.get(connectionId);
