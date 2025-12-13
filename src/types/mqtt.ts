@@ -47,6 +47,7 @@ export interface ButtonPanel {
   icon?: string;
   size?: 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   colorOn?: string;
+  order?: number;
 }
 
 export interface UriLauncherPanel {
