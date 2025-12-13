@@ -1,19 +1,23 @@
 import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, FileJson, Info } from 'lucide-react';
+import { Download, Upload, FileJson, Info, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const DataManagement = () => {
   const { connections, switches, buttonPanels, uriLaunchers } = useMqtt();
+  const { t, dir } = useLanguage();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleExport = () => {
     try {
-      // Get all settings from localStorage
       const settings = localStorage.getItem('app_settings');
       const theme = localStorage.getItem('iot-panel-theme');
+      const language = localStorage.getItem('app_language');
       
       const data = {
         version: '2.0',
@@ -24,12 +28,10 @@ const DataManagement = () => {
         uriLaunchers: uriLaunchers,
         settings: settings ? JSON.parse(settings) : {},
         theme: theme || 'dark',
+        language: language || 'fa',
       };
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
-      });
-
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -39,9 +41,9 @@ const DataManagement = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success('فایل پشتیبان با موفقیت ذخیره شد');
+      toast.success(t('backup_downloaded'));
     } catch (error) {
-      toast.error('خطا در ایجاد فایل پشتیبان');
+      toast.error(t('error'));
       console.error(error);
     }
   };
@@ -58,37 +60,20 @@ const DataManagement = () => {
         const content = e.target?.result as string;
         const data = JSON.parse(content);
 
-        if (!data.version) {
-          throw new Error('فایل نامعتبر است');
-        }
+        if (!data.version) throw new Error(t('invalid_file'));
 
-        // Store all data in localStorage
-        if (data.connections) {
-          localStorage.setItem('iot_mqtt_connections', JSON.stringify(data.connections));
-        }
-        if (data.switches) {
-          localStorage.setItem('iot_mqtt_switches', JSON.stringify(data.switches));
-        }
-        if (data.buttonPanels) {
-          localStorage.setItem('mqtt_button_panels', JSON.stringify(data.buttonPanels));
-        }
-        if (data.uriLaunchers) {
-          localStorage.setItem('mqtt_uri_launchers', JSON.stringify(data.uriLaunchers));
-        }
-        if (data.settings) {
-          localStorage.setItem('app_settings', JSON.stringify(data.settings));
-        }
-        if (data.theme) {
-          localStorage.setItem('iot-panel-theme', data.theme);
-        }
+        if (data.connections) localStorage.setItem('iot_mqtt_connections', JSON.stringify(data.connections));
+        if (data.switches) localStorage.setItem('iot_mqtt_switches', JSON.stringify(data.switches));
+        if (data.buttonPanels) localStorage.setItem('mqtt_button_panels', JSON.stringify(data.buttonPanels));
+        if (data.uriLaunchers) localStorage.setItem('mqtt_uri_launchers', JSON.stringify(data.uriLaunchers));
+        if (data.settings) localStorage.setItem('app_settings', JSON.stringify(data.settings));
+        if (data.theme) localStorage.setItem('iot-panel-theme', data.theme);
+        if (data.language) localStorage.setItem('app_language', data.language);
 
-        toast.success('تنظیمات با موفقیت بازیابی شد. لطفا صفحه را رفرش کنید.');
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        toast.success(t('settings_restored'));
+        setTimeout(() => window.location.reload(), 1000);
       } catch (error) {
-        toast.error('خطا در خواندن فایل. لطفا از معتبر بودن فایل اطمینان حاصل کنید.');
+        toast.error(t('file_read_error'));
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -96,110 +81,80 @@ const DataManagement = () => {
     };
 
     reader.onerror = () => {
-      toast.error('خطا در خواندن فایل');
+      toast.error(t('file_read_error'));
       setIsLoading(false);
     };
 
     reader.readAsText(file);
   };
 
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
+
   return (
-    <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+    <div className="min-h-screen bg-background safe-top safe-bottom" dir={dir}>
+      <div className="container mx-auto px-4 py-2 safe-right safe-left">
         <div className="mb-4">
-          <h1 className="text-3xl font-bold mb-2">اطلاعات داشبورد</h1>
-          <p className="text-muted-foreground">
-            مدیریت، پشتیبان‌گیری و بازیابی تنظیمات
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <BackIcon className="w-5 h-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">{t('dashboard_info')}</h1>
+          </div>
+          <p className="text-muted-foreground">{t('backup_settings_desc')}</p>
         </div>
 
         <div className="grid gap-6 max-w-4xl">
-          {/* Export Section */}
           <Card className="gradient-card border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="w-5 h-5" />
-                دریافت فایل پشتیبان
+                {t('get_backup_file')}
               </CardTitle>
-              <CardDescription>
-                تمامی تنظیمات، اتصالات و پنل‌های خود را در یک فایل ذخیره کنید
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button
-                onClick={handleExport}
-                className="w-full gradient-primary text-white hover:opacity-90 transition-smooth"
-                disabled={connections.length === 0 && switches.length === 0}
-              >
-                <Download className="w-4 h-4 ml-2" />
-                دریافت فایل پشتیبان (JSON)
+              <Button onClick={handleExport} className="w-full gradient-primary text-white" disabled={connections.length === 0 && switches.length === 0}>
+                <Download className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                {t('get_backup_file')} (JSON)
               </Button>
-
               <div className="mt-4 p-4 bg-accent/20 rounded-lg space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   <FileJson className="w-4 h-4 text-primary" />
-                  <span className="font-medium">اطلاعات قابل ذخیره:</span>
+                  <span className="font-medium">{t('backup_content')}</span>
                 </div>
-                <ul className="text-sm text-muted-foreground space-y-1 mr-6">
-                  <li>• {connections.length} اتصال</li>
-                  <li>• {switches.length} پنل کنترل</li>
-                  <li>• {buttonPanels.length} دکمه</li>
-                  <li>• {uriLaunchers.length} IP دستگاه</li>
-                  <li>• تنظیمات ظاهری و زبان</li>
+                <ul className={`text-sm text-muted-foreground space-y-1 ${dir === 'rtl' ? 'mr-6' : 'ml-6'}`}>
+                  <li>• {connections.length} {t('connections')}</li>
+                  <li>• {switches.length} {t('panels')}</li>
+                  <li>• {buttonPanels.length} {t('button_panels')}</li>
+                  <li>• {uriLaunchers.length} {t('device_ip')}</li>
+                  <li>• {t('app_settings')}</li>
                 </ul>
               </div>
             </CardContent>
           </Card>
 
-          {/* Import Section */}
           <Card className="gradient-card border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                بازیابی از فایل پشتیبان
+                {t('restore_settings')}
               </CardTitle>
-              <CardDescription>
-                تنظیمات قبلی خود را از فایل پشتیبان بازیابی کنید
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <label htmlFor="import-file">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full hover:bg-accent hover:border-primary transition-smooth cursor-pointer"
-                    disabled={isLoading}
-                  >
-                    <span>
-                      <Upload className="w-4 h-4 ml-2" />
-                      {isLoading ? 'در حال بارگذاری...' : 'انتخاب فایل پشتیبان'}
-                    </span>
-                  </Button>
-                </label>
-                <input
-                  id="import-file"
-                  type="file"
-                  accept=".json"
-                  onChange={handleImport}
-                  className="hidden"
-                  disabled={isLoading}
-                />
-
-                <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                  <Info className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium text-warning">توجه:</p>
-                    <p className="text-muted-foreground">
-                      بازیابی از فایل پشتیبان، تنظیمات فعلی شما را جایگزین خواهد کرد.
-                      پیشنهاد می‌شود قبل از بازیابی، از تنظیمات فعلی خود پشتیبان تهیه کنید.
-                    </p>
-                  </div>
-                </div>
+              <label htmlFor="import-file">
+                <Button asChild variant="outline" className="w-full cursor-pointer" disabled={isLoading}>
+                  <span>
+                    <Upload className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                    {isLoading ? t('loading') : t('select_backup_file')}
+                  </span>
+                </Button>
+              </label>
+              <input id="import-file" type="file" accept=".json" onChange={handleImport} className="hidden" disabled={isLoading} />
+              <div className="flex items-start gap-3 p-4 mt-4 bg-warning/10 border border-warning/20 rounded-lg">
+                <Info className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">{t('note')} {t('add_not_replace_note')}</p>
               </div>
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>

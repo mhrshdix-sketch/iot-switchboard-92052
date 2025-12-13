@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FilePlus2, Info, ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Upload, FilePlus2, Info, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 const AddDevice = () => {
   const navigate = useNavigate();
+  const { t, dir } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleMergeImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,56 +24,66 @@ const AddDevice = () => {
         const data = JSON.parse(content);
 
         if (!data.version) {
-          throw new Error('فایل نامعتبر است');
+          throw new Error(t('invalid_file'));
         }
+
+        // Create connection ID mapping (old ID -> new ID)
+        const connectionIdMap: Record<string, string> = {};
 
         // Merge connections
         if (data.connections && Array.isArray(data.connections)) {
           const existingConnections = JSON.parse(localStorage.getItem('iot_mqtt_connections') || '[]');
-          const newConnections = data.connections.map((conn: any) => ({
-            ...conn,
-            id: `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          }));
+          const newConnections = data.connections.map((conn: any) => {
+            const newId = `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            connectionIdMap[conn.id] = newId;
+            return {
+              ...conn,
+              id: newId,
+            };
+          });
           localStorage.setItem('iot_mqtt_connections', JSON.stringify([...existingConnections, ...newConnections]));
         }
 
-        // Merge switches
+        // Merge switches with mapped connectionId
         if (data.switches && Array.isArray(data.switches)) {
           const existingSwitches = JSON.parse(localStorage.getItem('iot_mqtt_switches') || '[]');
           const newSwitches = data.switches.map((sw: any) => ({
             ...sw,
             id: `switch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            connectionId: connectionIdMap[sw.connectionId] || sw.connectionId,
           }));
           localStorage.setItem('iot_mqtt_switches', JSON.stringify([...existingSwitches, ...newSwitches]));
         }
 
-        // Merge button panels
+        // Merge button panels with mapped connectionId
         if (data.buttonPanels && Array.isArray(data.buttonPanels)) {
           const existingButtons = JSON.parse(localStorage.getItem('mqtt_button_panels') || '[]');
           const newButtons = data.buttonPanels.map((btn: any) => ({
             ...btn,
             id: `button_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            connectionId: connectionIdMap[btn.connectionId] || btn.connectionId,
           }));
           localStorage.setItem('mqtt_button_panels', JSON.stringify([...existingButtons, ...newButtons]));
         }
 
-        // Merge URI launchers
+        // Merge URI launchers with mapped connectionId
         if (data.uriLaunchers && Array.isArray(data.uriLaunchers)) {
           const existingUris = JSON.parse(localStorage.getItem('mqtt_uri_launchers') || '[]');
           const newUris = data.uriLaunchers.map((uri: any) => ({
             ...uri,
             id: `uri_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            connectionId: connectionIdMap[uri.connectionId] || uri.connectionId,
           }));
           localStorage.setItem('mqtt_uri_launchers', JSON.stringify([...existingUris, ...newUris]));
         }
 
-        toast.success('دستگاه‌ها با موفقیت اضافه شدند. لطفا صفحه را رفرش کنید.');
+        toast.success(t('devices_added_success'));
         
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } catch (error) {
-        toast.error('خطا در خواندن فایل. لطفا از معتبر بودن فایل اطمینان حاصل کنید.');
+        toast.error(t('file_read_error'));
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -79,30 +91,32 @@ const AddDevice = () => {
     };
 
     reader.onerror = () => {
-      toast.error('خطا در خواندن فایل');
+      toast.error(t('file_read_error'));
       setIsLoading(false);
     };
 
     reader.readAsText(file);
   };
 
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
+
   return (
-    <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-4 safe-right safe-left" dir="rtl">
+    <div className="min-h-screen bg-background safe-top safe-bottom" dir={dir}>
+      <div className="container mx-auto px-4 py-4 safe-right safe-left">
         <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className="w-5 h-5" />
+              <BackIcon className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
                 <FilePlus2 className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl font-bold">افزودن دستگاه</h1>
+              <h1 className="text-3xl font-bold">{t('add_device')}</h1>
             </div>
           </div>
-          <p className="text-muted-foreground mr-14">
-            افزودن دستگاه‌های جدید از فایل پشتیبان
+          <p className={`text-muted-foreground ${dir === 'rtl' ? 'mr-14' : 'ml-14'}`}>
+            {t('add_new_devices')}
           </p>
         </div>
 
@@ -111,10 +125,10 @@ const AddDevice = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                افزودن از فایل پشتیبان
+                {t('add_from_backup')}
               </CardTitle>
               <CardDescription>
-                دستگاه‌های جدید را از فایل پشتیبان به تنظیمات فعلی اضافه کنید (بدون جایگزینی)
+                {t('add_from_backup_desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -126,8 +140,8 @@ const AddDevice = () => {
                     disabled={isLoading}
                   >
                     <span>
-                      <Upload className="w-4 h-4 ml-2" />
-                      {isLoading ? 'در حال بارگذاری...' : 'انتخاب فایل پشتیبان'}
+                      <Upload className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                      {isLoading ? t('loading') : t('select_backup_file')}
                     </span>
                   </Button>
                 </label>
@@ -143,10 +157,9 @@ const AddDevice = () => {
                 <div className="flex items-start gap-3 p-4 bg-accent/20 border border-accent/30 rounded-lg">
                   <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div className="text-sm space-y-1">
-                    <p className="font-medium text-primary">توجه:</p>
+                    <p className="font-medium text-primary">{t('note')}</p>
                     <p className="text-muted-foreground">
-                      این عملیات تنظیمات جدید را به تنظیمات فعلی شما <strong>اضافه</strong> می‌کند و آن‌ها را جایگزین نمی‌کند.
-                      برای جایگزینی کامل از بخش "اطلاعات داشبورد" استفاده کنید.
+                      {t('add_not_replace_note')}
                     </p>
                   </div>
                 </div>

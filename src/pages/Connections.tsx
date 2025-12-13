@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ConnectionCard } from '@/components/ConnectionCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { NetworkProtocol } from '@/types/mqtt';
-import { Plus, ArrowRight } from 'lucide-react';
+import { Plus, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Connections = () => {
   const { connections, addConnection } = useMqtt();
+  const { t, dir } = useLanguage();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
@@ -47,19 +49,21 @@ const Connections = () => {
     setShowForm(false);
   };
 
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
+
   return (
-    <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+    <div className="min-h-screen bg-background safe-top safe-bottom" dir={dir}>
+      <div className="container mx-auto px-4 py-2 safe-right safe-left">
         {/* Header */}
         <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className="w-5 h-5" />
+              <BackIcon className="w-5 h-5" />
             </Button>
-            <h1 className="text-3xl font-bold">مدیریت اتصالات</h1>
+            <h1 className="text-3xl font-bold">{t('connection_management')}</h1>
           </div>
           <p className="text-muted-foreground">
-            اتصالات MQTT خود را ایجاد و مدیریت کنید
+            {t('create_manage_mqtt')}
           </p>
         </div>
 
@@ -67,21 +71,21 @@ const Connections = () => {
         {showForm ? (
           <Card className="mb-6 gradient-card border-border/50">
             <CardHeader>
-              <CardTitle>اتصال جدید</CardTitle>
+              <CardTitle>{t('new_connection')}</CardTitle>
               <CardDescription>
-                اطلاعات بروکر MQTT خود را وارد کنید
+                {t('enter_broker_info')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">نام اتصال *</Label>
+                    <Label htmlFor="name">{t('connection_name')} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="اتصال من"
+                      placeholder={t('my_connection')}
                       required
                     />
                   </div>
@@ -92,12 +96,12 @@ const Connections = () => {
                       id="clientId"
                       value={formData.clientId}
                       onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                      placeholder="اختیاری"
+                      placeholder={t('optional')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="brokerAddress">آدرس بروکر *</Label>
+                    <Label htmlFor="brokerAddress">{t('broker_address')} *</Label>
                     <Input
                       id="brokerAddress"
                       value={formData.brokerAddress}
@@ -108,7 +112,7 @@ const Connections = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="port">پورت *</Label>
+                    <Label htmlFor="port">{t('port')} *</Label>
                     <Input
                       id="port"
                       type="number"
@@ -120,7 +124,7 @@ const Connections = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="protocol">پروتکل شبکه *</Label>
+                    <Label htmlFor="protocol">{t('network_protocol')} *</Label>
                     <Select
                       value={formData.protocol}
                       onValueChange={(value: NetworkProtocol) => 
@@ -139,7 +143,7 @@ const Connections = () => {
 
                   {formData.protocol === 'websocket-secure' && (
                     <div className="space-y-2">
-                      <Label htmlFor="path">مسیر (Path)</Label>
+                      <Label htmlFor="path">{t('path')}</Label>
                       <Input
                         id="path"
                         value={formData.path}
@@ -150,29 +154,29 @@ const Connections = () => {
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="username">نام کاربری</Label>
+                    <Label htmlFor="username">{t('username')}</Label>
                     <Input
                       id="username"
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      placeholder="اختیاری"
+                      placeholder={t('optional')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">رمز عبور</Label>
+                    <Label htmlFor="password">{t('password')}</Label>
                     <Input
                       id="password"
                       type="password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder="اختیاری"
+                      placeholder={t('optional')}
                     />
                   </div>
                 </div>
 
                 <div className="flex gap-6">
-                  <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'space-x-reverse' : ''}`}>
                     <Checkbox
                       id="cleanSession"
                       checked={formData.cleanSession}
@@ -185,7 +189,7 @@ const Connections = () => {
                     </Label>
                   </div>
 
-                  <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'space-x-reverse' : ''}`}>
                     <Checkbox
                       id="autoConnect"
                       checked={formData.autoConnect}
@@ -194,7 +198,7 @@ const Connections = () => {
                       }
                     />
                     <Label htmlFor="autoConnect" className="cursor-pointer">
-                      اتصال خودکار
+                      {t('auto_connect')}
                     </Label>
                   </div>
                 </div>
@@ -202,14 +206,14 @@ const Connections = () => {
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" className="gap-2">
                     <Plus className="w-4 h-4" />
-                    ایجاد اتصال
+                    {t('create_connection')}
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => setShowForm(false)}
                   >
-                    انصراف
+                    {t('cancel')}
                   </Button>
                 </div>
               </form>
@@ -218,7 +222,7 @@ const Connections = () => {
         ) : (
           <Button onClick={() => setShowForm(true)} className="mb-6 gap-2">
             <Plus className="w-4 h-4" />
-            اتصال جدید
+            {t('new_connection')}
           </Button>
         )}
 
@@ -229,14 +233,14 @@ const Connections = () => {
               <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mb-4">
                 <Plus className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">هیچ اتصالی وجود ندارد</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('no_connections')}</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                برای شروع کار با پنل IoT، اولین اتصال MQTT خود را ایجاد کنید
+                {t('no_connections_desc')}
               </p>
               {!showForm && (
                 <Button onClick={() => setShowForm(true)} className="gap-2">
                   <Plus className="w-4 h-4" />
-                  ایجاد اولین اتصال
+                  {t('create_first_connection')}
                 </Button>
               )}
             </CardContent>
