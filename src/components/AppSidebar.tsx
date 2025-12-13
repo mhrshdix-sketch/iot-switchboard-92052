@@ -2,6 +2,7 @@ import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Cpu, Link2, FilePlu
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   Sidebar,
@@ -16,40 +17,40 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-
-const items = [
-  { title: 'داشبورد', url: '/', icon: Home },
-  { title: 'اتصالات', url: '/connections', icon: Wifi },
-  { title: 'پنل‌ها', url: '/switches', icon: ToggleLeft },
-  { title: 'IP دستگاه', url: '/uri-launcher', icon: Link2 },
-  { title: 'افزودن دستگاه', url: '/add-device', icon: FilePlus2 },
-  { title: 'اطلاعات داشبورد', url: '/data-management', icon: Download },
-  { title: 'تنظیمات', url: '/settings', icon: Settings },
-];
 
 export function AppSidebar() {
   const location = useLocation();
   const { logout } = useAuth();
+  const { t, dir } = useLanguage();
   const currentPath = location.pathname;
+
+  const items = [
+    { title: t('dashboard'), url: '/', icon: Home },
+    { title: t('connections'), url: '/connections', icon: Wifi },
+    { title: t('panels'), url: '/switches', icon: ToggleLeft },
+    { title: t('device_ip'), url: '/uri-launcher', icon: Link2 },
+    { title: t('add_device'), url: '/add-device', icon: FilePlus2 },
+    { title: t('dashboard_info'), url: '/data-management', icon: Download },
+    { title: t('settings'), url: '/settings', icon: Settings },
+  ];
 
   const isActive = (path: string) => currentPath === path;
 
   const handleLogout = () => {
     logout();
-    toast.success('خروج موفقیت‌آمیز');
+    toast.success(t('logout_success'));
   };
 
   return (
-    <Sidebar className="border-l border-border" side="right">
+    <Sidebar className="border-l border-border" side="right" dir={dir}>
       <SidebarHeader className="border-b border-border p-4 safe-top safe-right">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg gradient-hero flex items-center justify-center shadow-glow flex-shrink-0">
             <Cpu className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-bold truncate">پنل مدیریت IoT</h2>
+            <h2 className="text-sm font-bold truncate">{t('iot_management_panel')}</h2>
             <p className="text-xs text-muted-foreground">MQTT Panel</p>
           </div>
         </div>
@@ -57,12 +58,12 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>منوی اصلی</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('main_menu')}</SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -71,7 +72,7 @@ export function AppSidebar() {
                       activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      <span className="mr-3">{item.title}</span>
+                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -89,8 +90,8 @@ export function AppSidebar() {
             onClick={handleLogout}
             className="flex-1 hover:bg-destructive hover:text-destructive-foreground transition-smooth"
           >
-            <LogOut className="w-4 h-4 ml-2" />
-            خروج
+            <LogOut className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+            {t('logout')}
           </Button>
         </div>
       </SidebarFooter>

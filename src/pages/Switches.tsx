@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { SwitchCard } from '@/components/SwitchCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,13 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { QoSLevel } from '@/types/mqtt';
-import { Plus, ArrowRight, AlertCircle } from 'lucide-react';
+import { Plus, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Switch } from '@/components/ui/switch';
 
 const Switches = () => {
   const { connections, switches, addSwitch } = useMqtt();
+  const { t, dir } = useLanguage();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
@@ -45,20 +46,21 @@ const Switches = () => {
   };
 
   const hasConnections = connections.length > 0;
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+    <div className="min-h-screen bg-background safe-top safe-bottom" dir={dir}>
+      <div className="container mx-auto px-4 py-2 safe-right safe-left">
         {/* Header */}
         <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className="w-5 h-5" />
+              <BackIcon className="w-5 h-5" />
             </Button>
-            <h1 className="text-3xl font-bold">مدیریت پنل‌های سوییچ</h1>
+            <h1 className="text-3xl font-bold">{t('switch_panels_management')}</h1>
           </div>
           <p className="text-muted-foreground">
-            پنل‌های کنترل دستگاه‌های IoT خود را ایجاد کنید
+            {t('create_switch_panels')}
           </p>
         </div>
 
@@ -66,13 +68,13 @@ const Switches = () => {
           <Alert className="mb-6 border-warning/50 bg-warning/10">
             <AlertCircle className="h-4 w-4 text-warning" />
             <AlertDescription className="text-warning-foreground">
-              برای ایجاد پنل سوییچ، ابتدا باید یک اتصال MQTT ایجاد کنید.
+              {t('need_connection_first')}
               <Button 
                 variant="link" 
-                className="p-0 h-auto mr-2 text-warning hover:text-warning/80"
+                className={`p-0 h-auto ${dir === 'rtl' ? 'mr-2' : 'ml-2'} text-warning hover:text-warning/80`}
                 onClick={() => navigate('/connections')}
               >
-                ایجاد اتصال
+                {t('create_connection')}
               </Button>
             </AlertDescription>
           </Alert>
@@ -82,16 +84,16 @@ const Switches = () => {
         {showForm && hasConnections ? (
           <Card className="mb-6 gradient-card border-border/50">
             <CardHeader>
-              <CardTitle>پنل سوییچ جدید</CardTitle>
+              <CardTitle>{t('new_switch_panel')}</CardTitle>
               <CardDescription>
-                اطلاعات سوییچ خود را وارد کنید
+                {t('enter_switch_info')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="connectionId">اتصال *</Label>
+                    <Label htmlFor="connectionId">{t('connection')} *</Label>
                     <Select
                       value={formData.connectionId}
                       onValueChange={(value) => 
@@ -100,7 +102,7 @@ const Switches = () => {
                       required
                     >
                       <SelectTrigger id="connectionId">
-                        <SelectValue placeholder="یک اتصال انتخاب کنید" />
+                        <SelectValue placeholder={t('select_connection')} />
                       </SelectTrigger>
                       <SelectContent>
                         {connections.map(conn => (
@@ -113,18 +115,18 @@ const Switches = () => {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="name">نام پنل *</Label>
+                    <Label htmlFor="name">{t('panel_name')} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="سوییچ اصلی"
+                      placeholder={t('main_switch')}
                       required
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="icon">آیکون (Emoji)</Label>
+                    <Label htmlFor="icon">{t('icon_emoji')}</Label>
                     <Input
                       id="icon"
                       value={formData.icon}
@@ -134,12 +136,12 @@ const Switches = () => {
                       className="text-4xl text-center h-20"
                     />
                     <p className="text-xs text-muted-foreground">
-                      یک emoji برای نمایش روی دکمه وارد کنید (اختیاری)
+                      {t('enter_emoji')}
                     </p>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="topic">توپیک (Topic) *</Label>
+                    <Label htmlFor="topic">{t('topic')} *</Label>
                     <Input
                       id="topic"
                       value={formData.topic}
@@ -150,7 +152,7 @@ const Switches = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="payloadOn">Payload روشن *</Label>
+                    <Label htmlFor="payloadOn">{t('payload_on')} *</Label>
                     <Input
                       id="payloadOn"
                       value={formData.payloadOn}
@@ -161,7 +163,7 @@ const Switches = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="payloadOff">Payload خاموش *</Label>
+                    <Label htmlFor="payloadOff">{t('payload_off')} *</Label>
                     <Input
                       id="payloadOff"
                       value={formData.payloadOff}
@@ -172,7 +174,7 @@ const Switches = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="qos">QoS Level *</Label>
+                    <Label htmlFor="qos">{t('qos_level')} *</Label>
                     <Select
                       value={formData.qos.toString()}
                       onValueChange={(value) => 
@@ -201,10 +203,10 @@ const Switches = () => {
                       />
                       <div className="flex-1">
                         <Label htmlFor="retain" className="text-base font-medium cursor-pointer">
-                          Retain Message
+                          {t('retain_message')}
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          پیام را در بروکر ذخیره کند تا دستگاه‌های جدید آخرین وضعیت را دریافت کنند
+                          {t('retain_message_desc')}
                         </p>
                       </div>
                     </div>
@@ -214,14 +216,14 @@ const Switches = () => {
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" variant="secondary" className="gap-2">
                     <Plus className="w-4 h-4" />
-                    ایجاد پنل
+                    {t('create_panel')}
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => setShowForm(false)}
                   >
-                    انصراف
+                    {t('cancel')}
                   </Button>
                 </div>
               </form>
@@ -234,7 +236,7 @@ const Switches = () => {
             className="mb-6 gap-2"
           >
             <Plus className="w-4 h-4" />
-            پنل جدید
+            {t('new_panel')}
           </Button>
         )}
 
@@ -245,9 +247,9 @@ const Switches = () => {
               <div className="w-16 h-16 rounded-full gradient-secondary flex items-center justify-center mb-4">
                 <Plus className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">هیچ پنلی وجود ندارد</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('no_panels')}</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                پنل‌های سوییچ برای کنترل دستگاه‌های IoT خود ایجاد کنید
+                {t('no_panels_desc')}
               </p>
               {hasConnections && !showForm && (
                 <Button 
@@ -256,7 +258,7 @@ const Switches = () => {
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  ایجاد اولین پنل
+                  {t('create_first_panel')}
                 </Button>
               )}
             </CardContent>

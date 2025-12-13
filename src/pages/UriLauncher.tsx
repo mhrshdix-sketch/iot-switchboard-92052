@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,13 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Link2, Plus, Edit2, Trash2, ExternalLink, ArrowRight } from 'lucide-react';
+import { Link2, Plus, Edit2, Trash2, ExternalLink, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 const UriLauncher = () => {
   const navigate = useNavigate();
-  const { connections, uriLaunchers, addUriLauncher, updateUriLauncher, deleteUriLauncher, launchUri } = useMqtt();
+  const { connections, uriLaunchers, addUriLauncher, updateUriLauncher, deleteUriLauncher } = useMqtt();
+  const { t, dir } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPanel, setEditingPanel] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -63,16 +65,16 @@ const UriLauncher = () => {
 
   const handleSave = () => {
     if (!formData.name || !formData.connectionId || !formData.topic) {
-      toast.error('لطفاً همه فیلدها را پر کنید');
+      toast.error(t('fill_all_fields'));
       return;
     }
 
     if (editingPanel) {
       updateUriLauncher(editingPanel, formData);
-      toast.success('پنل با موفقیت ویرایش شد');
+      toast.success(t('panel_edited_success'));
     } else {
       addUriLauncher(formData);
-      toast.success('پنل با موفقیت اضافه شد');
+      toast.success(t('panel_added_success'));
     }
 
     setDialogOpen(false);
@@ -80,39 +82,51 @@ const UriLauncher = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('آیا مطمئن هستید؟')) {
+    if (confirm(t('are_you_sure'))) {
       deleteUriLauncher(id);
-      toast.success('پنل حذف شد');
+      toast.success(t('panel_deleted'));
     }
   };
 
-  const handleLaunch = (id: string) => {
-    launchUri(id);
+  const handleLaunch = (uri: string | undefined) => {
+    if (uri) {
+      // Make sure the URI has a protocol
+      let launchUrl = uri;
+      if (!uri.startsWith('http://') && !uri.startsWith('https://')) {
+        launchUrl = `http://${uri}`;
+      }
+      window.open(launchUrl, '_blank');
+      toast.success(t('uri_opened'));
+    } else {
+      toast.error(t('uri_not_received'));
+    }
   };
 
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
+
   return (
-    <div className="min-h-screen bg-background safe-top safe-bottom">
-      <div className="container mx-auto px-4 py-4 safe-right safe-left" dir="rtl">
+    <div className="min-h-screen bg-background safe-top safe-bottom" dir={dir}>
+      <div className="container mx-auto px-4 py-4 safe-right safe-left">
         <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className="w-5 h-5" />
+              <BackIcon className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
                 <Link2 className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-3xl font-bold">IP دستگاه</h1>
+              <h1 className="text-3xl font-bold">{t('device_ip')}</h1>
             </div>
           </div>
-          <p className="text-muted-foreground mr-14">
-            مدیریت لانچر‌های URI
+          <p className={`text-muted-foreground ${dir === 'rtl' ? 'mr-14' : 'ml-14'}`}>
+            {t('uri_launcher_management')}
           </p>
         </div>
 
         <Button onClick={handleAdd} className="mb-4 gradient-primary text-white">
-          <Plus className="w-4 h-4 ml-2" />
-          افزودن پنل
+          <Plus className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+          {t('add_panel')}
         </Button>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -149,36 +163,36 @@ const UriLauncher = () => {
                 )}
               </div>
               <Button
-                onClick={() => handleLaunch(panel.id)}
+                onClick={() => handleLaunch(panel.uri)}
                 className="w-full gradient-primary text-white"
                 size="sm"
                 disabled={!panel.uri}
               >
-                <ExternalLink className="w-4 h-4 ml-2" />
-                {panel.uri || 'در انتظار دریافت...'}
+                <ExternalLink className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                {panel.uri || t('awaiting_receipt')}
               </Button>
             </Card>
           ))}
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogContent className="sm:max-w-md" dir={dir}>
             <DialogHeader>
-              <DialogTitle>{editingPanel ? 'ویرایش پنل' : 'افزودن پنل جدید'}</DialogTitle>
+              <DialogTitle>{editingPanel ? t('edit_panel') : t('add_new_panel')}</DialogTitle>
               <DialogDescription>
-                اطلاعات URI Launcher را وارد کنید
+                {t('enter_uri_launcher_info')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>اتصال</Label>
+                <Label>{t('connection')}</Label>
                 <Select
                   value={formData.connectionId}
                   onValueChange={(value) => setFormData({ ...formData, connectionId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="انتخاب اتصال" />
+                    <SelectValue placeholder={t('select_connection_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {connections.map((conn) => (
@@ -191,16 +205,16 @@ const UriLauncher = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Panel name</Label>
+                <Label>{t('panel_name')}</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="نام پنل"
+                  placeholder={t('panel_name')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Topic</Label>
+                <Label>{t('topic')}</Label>
                 <Input
                   value={formData.topic}
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
@@ -209,7 +223,7 @@ const UriLauncher = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>QoS Level</Label>
+                <Label>{t('qos_level')}</Label>
                 <Select
                   value={formData.qos.toString()}
                   onValueChange={(value) => setFormData({ ...formData, qos: parseInt(value) as 0 | 1 | 2 })}
@@ -228,10 +242,10 @@ const UriLauncher = () => {
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                انصراف
+                {t('cancel')}
               </Button>
               <Button onClick={handleSave} className="gradient-primary text-white">
-                ذخیره
+                {t('save')}
               </Button>
             </DialogFooter>
           </DialogContent>

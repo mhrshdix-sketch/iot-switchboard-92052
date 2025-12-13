@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { SwitchButton } from '@/components/SwitchButton';
 import { ButtonCard } from '@/components/ButtonCard';
 import { Button } from '@/components/ui/button';
@@ -101,6 +102,7 @@ const SortableButton = ({ buttonPanel, isDragMode }: SortableButtonProps) => {
 
 const Dashboard = () => {
   const { switches, buttonPanels, updateSwitch, updateButtonPanel } = useMqtt();
+  const { t, dir } = useLanguage();
   const [isDragMode, setIsDragMode] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
@@ -143,7 +145,6 @@ const Dashboard = () => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      // Check if it's a switch
       const switchOldIndex = sortedSwitches.findIndex(s => s.id === active.id);
       const switchNewIndex = sortedSwitches.findIndex(s => s.id === over.id);
 
@@ -155,7 +156,6 @@ const Dashboard = () => {
         return;
       }
 
-      // Check if it's a button
       const buttonOldIndex = sortedButtons.findIndex(b => b.id === active.id);
       const buttonNewIndex = sortedButtons.findIndex(b => b.id === over.id);
 
@@ -192,15 +192,16 @@ const Dashboard = () => {
       onPointerDown={handleLongPressStart}
       onPointerUp={handleLongPressEnd}
       onPointerLeave={handleLongPressEnd}
+      dir={dir}
     >
-      <div className="container mx-auto px-4 py-2 safe-right safe-left" dir="rtl">
+      <div className="container mx-auto px-4 py-2 safe-right safe-left">
         {isDragMode && (
           <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between">
             <span className="text-sm font-medium text-primary">
-              حالت چیدمان فعال - پنل‌ها را جابجا کنید
+              {t('layout_mode_active')}
             </span>
             <Button size="sm" variant="outline" onClick={exitDragMode}>
-              تأیید
+              {t('confirm')}
             </Button>
           </div>
         )}
@@ -211,14 +212,14 @@ const Dashboard = () => {
               <div className="w-20 h-20 rounded-2xl gradient-secondary flex items-center justify-center mb-4 shadow-glow">
                 <ToggleLeft className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-semibold mb-2">هیچ پنلی وجود ندارد</h3>
+              <h3 className="text-2xl font-semibold mb-2">{t('no_panels')}</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                پنل‌های سوییچ برای کنترل دستگاه‌های خود ایجاد کنید و از هر جا به آن‌ها دسترسی داشته باشید
+                {t('no_panels_desc')}
               </p>
               <Link to="/switches">
                 <Button className="gradient-primary text-white hover:opacity-90 shadow-glow">
-                  <Plus className="w-4 h-4 ml-2" />
-                  ایجاد اولین پنل
+                  <Plus className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                  {t('create_first_panel')}
                 </Button>
               </Link>
             </CardContent>
@@ -247,7 +248,7 @@ const Dashboard = () => {
 
         {!isDragMode && (sortedSwitches.length > 0 || sortedButtons.length > 0) && (
           <p className="text-center text-xs text-muted-foreground mt-6">
-            برای تغییر چیدمان، ۳ ثانیه انگشت خود را روی صفحه نگه دارید
+            {t('hold_to_rearrange')}
           </p>
         )}
       </div>
