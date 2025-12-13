@@ -6,23 +6,24 @@ import { Download, Upload, FileJson, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DataManagement = () => {
-  const { connections, switches } = useMqtt();
+  const { connections, switches, buttonPanels, uriLaunchers } = useMqtt();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleExport = () => {
     try {
-      // Get auth credentials from localStorage
-      const authData = {
-        username: 'admin',
-        password: 'xadminx',
-      };
-
+      // Get all settings from localStorage
+      const settings = localStorage.getItem('app_settings');
+      const theme = localStorage.getItem('iot-panel-theme');
+      
       const data = {
-        version: '1.0',
+        version: '2.0',
         exportDate: new Date().toISOString(),
-        auth: authData,
         connections: connections,
         switches: switches,
+        buttonPanels: buttonPanels,
+        uriLaunchers: uriLaunchers,
+        settings: settings ? JSON.parse(settings) : {},
+        theme: theme || 'dark',
       };
 
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -57,22 +58,32 @@ const DataManagement = () => {
         const content = e.target?.result as string;
         const data = JSON.parse(content);
 
-        if (!data.version || !data.connections || !data.switches) {
+        if (!data.version) {
           throw new Error('فایل نامعتبر است');
         }
 
         // Store all data in localStorage
-        localStorage.setItem('iot_mqtt_connections', JSON.stringify(data.connections));
-        localStorage.setItem('iot_mqtt_switches', JSON.stringify(data.switches));
-        
-        // Store auth data if available
-        if (data.auth) {
-          // Auth is already stored, no need to update
+        if (data.connections) {
+          localStorage.setItem('iot_mqtt_connections', JSON.stringify(data.connections));
+        }
+        if (data.switches) {
+          localStorage.setItem('iot_mqtt_switches', JSON.stringify(data.switches));
+        }
+        if (data.buttonPanels) {
+          localStorage.setItem('mqtt_button_panels', JSON.stringify(data.buttonPanels));
+        }
+        if (data.uriLaunchers) {
+          localStorage.setItem('mqtt_uri_launchers', JSON.stringify(data.uriLaunchers));
+        }
+        if (data.settings) {
+          localStorage.setItem('app_settings', JSON.stringify(data.settings));
+        }
+        if (data.theme) {
+          localStorage.setItem('iot-panel-theme', data.theme);
         }
 
         toast.success('تنظیمات با موفقیت بازیابی شد. لطفا صفحه را رفرش کنید.');
         
-        // Reload page after 1 second
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -132,7 +143,9 @@ const DataManagement = () => {
                 <ul className="text-sm text-muted-foreground space-y-1 mr-6">
                   <li>• {connections.length} اتصال</li>
                   <li>• {switches.length} پنل کنترل</li>
-                  <li>• تنظیمات ظاهری و سفارشی‌سازی‌ها</li>
+                  <li>• {buttonPanels.length} دکمه</li>
+                  <li>• {uriLaunchers.length} IP دستگاه</li>
+                  <li>• تنظیمات ظاهری و زبان</li>
                 </ul>
               </div>
             </CardContent>
@@ -187,36 +200,6 @@ const DataManagement = () => {
             </CardContent>
           </Card>
 
-          {/* Info Section */}
-          <Card className="gradient-card border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="w-5 h-5" />
-                راهنمای استفاده
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <h4 className="font-medium mb-1">نحوه اشتراک‌گذاری تنظیمات:</h4>
-                  <ol className="text-muted-foreground space-y-1 mr-4">
-                    <li>1. روی دکمه "دریافت فایل پشتیبان" کلیک کنید</li>
-                    <li>2. فایل JSON دریافت شده را با دیگران به اشتراک بگذارید</li>
-                    <li>3. گیرنده می‌تواند با استفاده از دکمه "بازیابی" تنظیمات را وارد کند</li>
-                  </ol>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-1">محتوای فایل پشتیبان:</h4>
-                  <ul className="text-muted-foreground space-y-1 mr-4">
-                    <li>• اطلاعات کامل اتصالات MQTT (بدون رمز عبور به دلایل امنیتی)</li>
-                    <li>• تمامی پنل‌های کنترل و تنظیمات آن‌ها</li>
-                    <li>• سفارشی‌سازی‌های ظاهری شامل رنگ، سایز و ایموجی</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

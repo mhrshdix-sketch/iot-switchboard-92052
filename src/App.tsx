@@ -6,14 +6,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MqttProvider } from "@/contexts/MqttContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Cpu } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Connections from "./pages/Connections";
 import Switches from "./pages/Switches";
-import ButtonPanels from "./pages/ButtonPanels";
 import UriLauncher from "./pages/UriLauncher";
+import AddDevice from "./pages/AddDevice";
 import DataManagement from "./pages/DataManagement";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
@@ -45,8 +46,8 @@ const ProtectedRoutes = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/connections" element={<Connections />} />
               <Route path="/switches" element={<Switches />} />
-              <Route path="/button-panels" element={<ButtonPanels />} />
               <Route path="/uri-launcher" element={<UriLauncher />} />
+              <Route path="/add-device" element={<AddDevice />} />
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
@@ -61,20 +62,22 @@ const ProtectedRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="dark" storageKey="iot-panel-theme">
-      <AuthProvider>
-        <MqttProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/*" element={<ProtectedRoutes />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </MqttProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <MqttProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/*" element={<ProtectedRoutes />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </MqttProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

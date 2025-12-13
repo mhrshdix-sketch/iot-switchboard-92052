@@ -142,18 +142,21 @@ const UriLauncher = () => {
               <div className="text-sm text-muted-foreground space-y-1 mb-3">
                 <p>Topic: {panel.topic}</p>
                 <p>QoS: {panel.qos}</p>
-                {panel.uri && <p className="text-primary truncate">URI: {panel.uri}</p>}
+                {panel.uri && (
+                  <p className="text-primary font-bold text-lg truncate">
+                    URI: {panel.uri}
+                  </p>
+                )}
               </div>
-              {panel.uri && (
-                <Button
-                  onClick={() => handleLaunch(panel.id)}
-                  className="w-full gradient-primary text-white"
-                  size="sm"
-                >
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                  LAUNCH URI
-                </Button>
-              )}
+              <Button
+                onClick={() => handleLaunch(panel.id)}
+                className="w-full gradient-primary text-white"
+                size="sm"
+                disabled={!panel.uri}
+              >
+                <ExternalLink className="w-4 h-4 ml-2" />
+                {panel.uri || 'در انتظار دریافت...'}
+              </Button>
             </Card>
           ))}
         </div>

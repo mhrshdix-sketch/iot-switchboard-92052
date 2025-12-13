@@ -143,9 +143,6 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>❤️ طراحی شده توسط Mehrsa-Tech ❤️</p>
-        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Cpu, MousePointerClick, Link2 } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Cpu, Link2, FilePlus2 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,8 +23,8 @@ const items = [
   { title: 'داشبورد', url: '/', icon: Home },
   { title: 'اتصالات', url: '/connections', icon: Wifi },
   { title: 'پنل‌ها', url: '/switches', icon: ToggleLeft },
-  { title: 'Button Panel', url: '/button-panels', icon: MousePointerClick },
   { title: 'IP دستگاه', url: '/uri-launcher', icon: Link2 },
+  { title: 'افزودن دستگاه', url: '/add-device', icon: FilePlus2 },
   { title: 'اطلاعات داشبورد', url: '/data-management', icon: Download },
   { title: 'تنظیمات', url: '/settings', icon: Settings },
 ];
