@@ -15,10 +15,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt'],
+      includeAssets: ['iotex-logo.png', 'robots.txt'],
       manifest: {
-        name: 'پنل مدیریت IoT',
-        short_name: 'IoT Panel',
+        name: 'IOTEX - پنل مدیریت آیوتکس',
+        short_name: 'IOTEX',
         description: 'مدیریت و کنترل دستگاه‌های IoT با پروتکل MQTT',
         theme_color: '#3b82f6',
         background_color: '#0f172a',
@@ -28,15 +28,15 @@ export default defineConfig(({ mode }) => ({
         dir: 'rtl',
         icons: [
           {
-            src: '/placeholder.svg',
+            src: '/iotex-logo.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/placeholder.svg',
+            src: '/iotex-logo.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]

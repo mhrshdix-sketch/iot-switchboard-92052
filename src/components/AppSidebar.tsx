@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Cpu, Link2, FilePlus2 } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import iotexLogo from '@/assets/iotex-logo.png';
 
 export function AppSidebar() {
   const location = useLocation();
@@ -46,12 +47,11 @@ export function AppSidebar() {
     <Sidebar className="border-l border-border" side="right" dir={dir}>
       <SidebarHeader className="border-b border-border p-4 safe-top safe-right">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg gradient-hero flex items-center justify-center shadow-glow flex-shrink-0">
-            <Cpu className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-lg overflow-hidden shadow-glow flex-shrink-0">
+            <img src={iotexLogo} alt="IOTEX Logo" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-bold truncate">{t('iot_management_panel')}</h2>
-            <p className="text-xs text-muted-foreground">MQTT Panel</p>
           </div>
         </div>
       </SidebarHeader>
