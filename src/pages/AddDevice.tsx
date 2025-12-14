@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, FilePlus2, Info, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Upload, FilePlus2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -153,16 +153,6 @@ const AddDevice = () => {
                   className="hidden"
                   disabled={isLoading}
                 />
-
-                <div className="flex items-start gap-3 p-4 bg-accent/20 border border-accent/30 rounded-lg">
-                  <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium text-primary">{t('note')}</p>
-                    <p className="text-muted-foreground">
-                      {t('add_not_replace_note')}
-                    </p>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
