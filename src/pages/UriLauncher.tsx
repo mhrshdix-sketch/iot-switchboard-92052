@@ -175,6 +175,12 @@ const UriLauncher = () => {
           ))}
         </div>
 
+        {uriLaunchers.length > 0 && (
+          <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+            <p className="text-sm text-muted-foreground">{t('device_web_access_note')}</p>
+          </div>
+        )}
+
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="sm:max-w-md" dir={dir}>
             <DialogHeader>

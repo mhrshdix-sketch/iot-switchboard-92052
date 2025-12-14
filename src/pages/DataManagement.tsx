@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMqtt } from '@/contexts/MqttContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Upload, FileJson, Info, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +62,14 @@ const DataManagement = () => {
 
         if (!data.version) throw new Error(t('invalid_file'));
 
+        // Clear all existing settings first (replace mode)
+        localStorage.removeItem('iot_mqtt_connections');
+        localStorage.removeItem('iot_mqtt_switches');
+        localStorage.removeItem('mqtt_button_panels');
+        localStorage.removeItem('mqtt_uri_launchers');
+        localStorage.removeItem('app_settings');
+
+        // Then set new settings
         if (data.connections) localStorage.setItem('iot_mqtt_connections', JSON.stringify(data.connections));
         if (data.switches) localStorage.setItem('iot_mqtt_switches', JSON.stringify(data.switches));
         if (data.buttonPanels) localStorage.setItem('mqtt_button_panels', JSON.stringify(data.buttonPanels));
@@ -116,18 +124,11 @@ const DataManagement = () => {
                 <Download className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                 {t('get_backup_file')} (JSON)
               </Button>
-              <div className="mt-4 p-4 bg-accent/20 rounded-lg space-y-2">
+              <div className="mt-4 p-4 bg-accent/20 rounded-lg">
                 <div className="flex items-center gap-2 text-sm">
                   <FileJson className="w-4 h-4 text-primary" />
-                  <span className="font-medium">{t('backup_content')}</span>
+                  <span className="text-muted-foreground">{t('backup_content_desc')}</span>
                 </div>
-                <ul className={`text-sm text-muted-foreground space-y-1 ${dir === 'rtl' ? 'mr-6' : 'ml-6'}`}>
-                  <li>• {connections.length} {t('connections')}</li>
-                  <li>• {switches.length} {t('panels')}</li>
-                  <li>• {buttonPanels.length} {t('button_panels')}</li>
-                  <li>• {uriLaunchers.length} {t('device_ip')}</li>
-                  <li>• {t('app_settings')}</li>
-                </ul>
               </div>
             </CardContent>
           </Card>
@@ -151,7 +152,7 @@ const DataManagement = () => {
               <input id="import-file" type="file" accept=".json" onChange={handleImport} className="hidden" disabled={isLoading} />
               <div className="flex items-start gap-3 p-4 mt-4 bg-warning/10 border border-warning/20 rounded-lg">
                 <Info className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground">{t('note')} {t('add_not_replace_note')}</p>
+                <p className="text-sm text-muted-foreground">{t('restore_replace_note')}</p>
               </div>
             </CardContent>
           </Card>
