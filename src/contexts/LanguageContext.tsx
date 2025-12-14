@@ -21,7 +21,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'تنظیمات',
     'logout': 'خروج',
     'main_menu': 'منوی اصلی',
-    'iot_management_panel': 'پنل مدیریت IoT',
+    'iot_management_panel': 'پنل مدیریت آیوتکس',
     
     // Settings
     'appearance': 'ظاهر',
@@ -168,7 +168,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'Settings',
     'logout': 'Logout',
     'main_menu': 'Main Menu',
-    'iot_management_panel': 'IoT Management Panel',
+    'iot_management_panel': 'IOTEX Management Panel',
     
     // Settings
     'appearance': 'Appearance',
