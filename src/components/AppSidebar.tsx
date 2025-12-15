@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import iotexLogo from '@/assets/iotex-logo.png';
+import atsonLogo from '@/assets/atson-logo.png';
 
 export function AppSidebar() {
   const location = useLocation();
@@ -48,7 +48,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-border p-4 safe-top safe-right">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg overflow-hidden shadow-glow flex-shrink-0">
-            <img src={iotexLogo} alt="IOTEX Logo" className="w-full h-full object-cover" />
+            <img src={atsonLogo} alt="ATSON Logo" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-bold truncate">{t('iot_management_panel')}</h2>

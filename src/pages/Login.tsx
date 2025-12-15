@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
-import iotexLogo from '@/assets/iotex-logo.png';
+import atsonLogo from '@/assets/atson-logo.png';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -59,10 +59,10 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl shadow-glow mb-4 animate-pulse overflow-hidden">
-            <img src={iotexLogo} alt="IOTEX Logo" className="w-full h-full object-cover" />
+            <img src={atsonLogo} alt="ATSON Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            پنل مدیریت آیوتکس
+            پنل مدیریت آتسون
           </h1>
           <p className="text-muted-foreground">
             سامانه مدیریت و کنترل دستگاه‌های هوشمند
@@ -145,7 +145,7 @@ const Login = () => {
         </Card>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
-          طراحی شده توسط | آیوتکس
+          طراحی شده توسط | آتسون
         </p>
       </div>
     </div>
