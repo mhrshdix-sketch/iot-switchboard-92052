@@ -144,8 +144,8 @@ const translations: Record<Language, Record<string, string>> = {
     'wizard_step5_title': 'آپلود فایل کانفیگ',
     'wizard_step5_text': 'لطفا فایل کانفیگ دستگاه خود را آپلود کنید',
     'wizard_step5_button': 'آپلود فایل کانفیگ دستگاه',
+    'reload': 'بارگذاری مجدد',
     
-    // Data Management
     'backup_settings': 'پشتیبان‌گیری و بازیابی تنظیمات',
     'backup_settings_desc': 'تنظیمات و اطلاعات داشبورد خود را ذخیره یا بازیابی کنید',
     'get_backup_file': 'دریافت فایل پشتیبان',
@@ -311,8 +311,8 @@ const translations: Record<Language, Record<string, string>> = {
     'wizard_step5_title': 'Upload Config File',
     'wizard_step5_text': 'Please upload your device config file',
     'wizard_step5_button': 'Upload Device Config File',
+    'reload': 'Reload',
     
-    // Data Management
     'backup_settings': 'Backup and Restore Settings',
     'backup_settings_desc': 'Save or restore your dashboard settings and data',
     'get_backup_file': 'Download Backup File',

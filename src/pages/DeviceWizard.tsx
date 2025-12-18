@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, ArrowRight, ArrowLeft, Smartphone, Wifi, Globe, FileJson, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, ArrowRight, ArrowLeft, Smartphone, Wifi, Globe, FileJson, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
@@ -214,21 +214,38 @@ const DeviceWizard = () => {
     </div>
   );
 
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const handleReloadIframe = () => {
+    if (iframeRef.current) {
+      iframeRef.current.src = iframeRef.current.src;
+    }
+  };
+
   const renderStep4 = () => (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-center mb-2">
         <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center shadow-glow">
           <Globe className="w-8 h-8 text-white" />
         </div>
       </div>
-      <div className="w-full h-[400px] rounded-lg border border-border overflow-hidden bg-white">
+      <div className="w-full h-[600px] rounded-lg border-2 border-border overflow-hidden bg-white shadow-lg">
         <iframe
+          ref={iframeRef}
           src="http://192.168.4.1"
           className="w-full h-full"
           title="Device Configuration"
           sandbox="allow-same-origin allow-scripts allow-forms"
         />
       </div>
+      <Button
+        onClick={handleReloadIframe}
+        variant="outline"
+        className="w-full"
+      >
+        <RefreshCw className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+        {t('reload')}
+      </Button>
       <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 border border-border">
         <Checkbox
           id="step4-check"
