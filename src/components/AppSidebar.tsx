@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2 } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2, Smartphone } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +32,7 @@ export function AppSidebar() {
     { title: t('panels'), url: '/switches', icon: ToggleLeft },
     { title: t('device_ip'), url: '/uri-launcher', icon: Link2 },
     { title: t('add_device'), url: '/add-device', icon: FilePlus2 },
+    { title: t('add_new_device'), url: '/device-wizard', icon: Smartphone },
     { title: t('dashboard_info'), url: '/data-management', icon: Download },
     { title: t('settings'), url: '/settings', icon: Settings },
   ];

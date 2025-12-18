@@ -15,6 +15,7 @@ import Connections from "./pages/Connections";
 import Switches from "./pages/Switches";
 import UriLauncher from "./pages/UriLauncher";
 import AddDevice from "./pages/AddDevice";
+import DeviceWizard from "./pages/DeviceWizard";
 import DataManagement from "./pages/DataManagement";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
@@ -48,6 +49,7 @@ const ProtectedRoutes = () => {
               <Route path="/switches" element={<Switches />} />
               <Route path="/uri-launcher" element={<UriLauncher />} />
               <Route path="/add-device" element={<AddDevice />} />
+              <Route path="/device-wizard" element={<DeviceWizard />} />
               <Route path="/data-management" element={<DataManagement />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
