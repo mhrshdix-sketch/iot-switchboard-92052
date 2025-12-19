@@ -176,6 +176,8 @@ const translations: Record<Language, Record<string, string>> = {
     'disconnected': 'قطع شده',
     'connecting': 'در حال اتصال',
     'logout_success': 'خروج موفقیت‌آمیز',
+    'panel_not_found': 'پنل پیدا نشد',
+    'back': 'بازگشت',
   },
   en: {
     // Navigation
@@ -343,6 +345,8 @@ const translations: Record<Language, Record<string, string>> = {
     'disconnected': 'Disconnected',
     'connecting': 'Connecting',
     'logout_success': 'Logged out successfully',
+    'panel_not_found': 'Panel not found',
+    'back': 'Back',
   },
 };
 
