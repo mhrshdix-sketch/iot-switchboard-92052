@@ -1,8 +1,9 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2, Smartphone } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2, Globe } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useMqtt } from '@/contexts/MqttContext';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   Sidebar,
@@ -24,6 +25,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { logout } = useAuth();
   const { t, dir } = useLanguage();
+  const { uriLaunchers } = useMqtt();
   const currentPath = location.pathname;
 
   const items = [
@@ -32,7 +34,6 @@ export function AppSidebar() {
     { title: t('panels'), url: '/switches', icon: ToggleLeft },
     { title: t('device_ip'), url: '/uri-launcher', icon: Link2 },
     { title: t('add_device'), url: '/add-device', icon: FilePlus2 },
-    { title: t('add_new_device'), url: '/device-wizard', icon: Smartphone },
     { title: t('dashboard_info'), url: '/data-management', icon: Download },
     { title: t('settings'), url: '/settings', icon: Settings },
   ];
@@ -81,6 +82,30 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {uriLaunchers.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{t('device_ip')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {uriLaunchers.map((launcher) => (
+                  <SidebarMenuItem key={launcher.id}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={`/uri-view/${launcher.id}`}
+                        className="hover:bg-accent/50 transition-smooth"
+                        activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
+                      >
+                        <Globe className="h-5 w-5 flex-shrink-0" />
+                        <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{launcher.name}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border p-3 safe-bottom safe-right">
