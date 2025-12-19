@@ -28,8 +28,11 @@ export function AppSidebar() {
   const { uriLaunchers } = useMqtt();
   const currentPath = location.pathname;
 
-  const items = [
+  const mainItems = [
     { title: t('dashboard'), url: '/', icon: Home },
+  ];
+
+  const otherItems = [
     { title: t('connections'), url: '/connections', icon: Wifi },
     { title: t('panels'), url: '/switches', icon: ToggleLeft },
     { title: t('device_ip'), url: '/uri-launcher', icon: Link2 },
@@ -64,7 +67,41 @@ export function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {/* Dashboard first */}
+              {mainItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end={item.url === '/'}
+                      className="hover:bg-accent/50 transition-smooth"
+                      activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              
+              {/* Dynamic URI launchers right after Dashboard */}
+              {uriLaunchers.map((launcher) => (
+                <SidebarMenuItem key={launcher.id}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={`/uri-view/${launcher.id}`}
+                      className="hover:bg-accent/50 transition-smooth"
+                      activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
+                    >
+                      <Globe className="h-5 w-5 flex-shrink-0" />
+                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{launcher.name}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              
+              {/* Other items */}
+              {otherItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -82,30 +119,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {uriLaunchers.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{t('device_ip')}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {uriLaunchers.map((launcher) => (
-                  <SidebarMenuItem key={launcher.id}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={`/uri-view/${launcher.id}`}
-                        className="hover:bg-accent/50 transition-smooth"
-                        activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
-                      >
-                        <Globe className="h-5 w-5 flex-shrink-0" />
-                        <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{launcher.name}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border p-3 safe-bottom safe-right">
