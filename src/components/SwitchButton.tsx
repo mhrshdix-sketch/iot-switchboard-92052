@@ -13,6 +13,7 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
   const { toggleSwitch, updateSwitch, connections } = useMqtt();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [blinkCount, setBlinkCount] = useState(0);
+  const [isSelected, setIsSelected] = useState(false);
   
   const connection = connections.find(c => c.id === switchPanel.connectionId);
   const isConnected = connection?.status === 'connected';
@@ -37,10 +38,27 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
     }
   }, [isActive]);
 
-  const handleClick = (e: React.MouseEvent) => {
+  // Reset selection after 3 seconds of inactivity
+  useEffect(() => {
+    if (isSelected) {
+      const timeout = setTimeout(() => {
+        setIsSelected(false);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSelected]);
+
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
-    if (isConnected) {
+    if (!isConnected) return;
+
+    if (isSelected) {
+      // Second tap - toggle the switch
       toggleSwitch(switchPanel.id);
+      setIsSelected(false);
+    } else {
+      // First tap - select the panel
+      setIsSelected(true);
     }
   };
 
@@ -72,12 +90,12 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
     xl: 'text-7xl',
   };
 
-  const colorOn = switchPanel.colorOn || '#22c55e';
+  const colorOn = switchPanel.colorOn || '#2698ff';
 
   return (
     <>
       <button
-        onPointerDown={handleClick}
+        onClick={handleClick}
         disabled={!isConnected}
         className={cn(
           'relative group overflow-hidden rounded-2xl',
@@ -88,11 +106,12 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
           sizeClasses[size],
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'hover:scale-105',
-          !isConnected && 'grayscale'
+          !isConnected && 'grayscale',
+          isSelected && 'ring-4 ring-primary ring-offset-2 ring-offset-background'
         )}
         style={{
           backgroundColor: isActive ? `${colorOn}15` : 'hsl(var(--card))',
-          borderColor: isActive ? colorOn : 'hsl(var(--border))',
+          borderColor: isSelected ? 'hsl(var(--primary))' : isActive ? colorOn : 'hsl(var(--border))',
           boxShadow: isActive ? `0 0 24px ${colorOn}40` : undefined,
         }}
         dir="rtl"
@@ -104,6 +123,13 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
         >
           <MoreVertical className="w-4 h-4" />
         </button>
+
+        {/* Selection Indicator */}
+        {isSelected && (
+          <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium z-20">
+            انتخاب شده
+          </div>
+        )}
 
         {/* Background Glow Effect */}
         <div 
