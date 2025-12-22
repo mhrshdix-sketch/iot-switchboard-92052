@@ -44,7 +44,6 @@ export function AppSidebar() {
 
   const otherItems = [
     { title: t('add_device'), url: '/add-device', icon: FilePlus2 },
-    { title: t('settings'), url: '/settings', icon: Settings },
   ];
 
   const isActive = (path: string) => currentPath === path;
@@ -112,17 +111,31 @@ export function AppSidebar() {
                 );
               })}
 
-              {/* Device Settings Collapsible */}
+              {/* Settings with Device Settings nested inside */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/settings"
+                    className="hover:bg-accent/50 transition-smooth"
+                    activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
+                  >
+                    <Settings className="h-5 w-5 flex-shrink-0" />
+                    <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{t('settings')}</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Device Settings Collapsible - under Settings */}
               <SidebarMenuItem>
                 <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className={`w-full hover:bg-accent/50 transition-smooth ${isDeviceSettingsActive ? 'bg-accent/30' : ''}`}>
-                      <Cpu className="h-5 w-5 flex-shrink-0" />
-                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{t('device_settings')}</span>
+                    <SidebarMenuButton className={`w-full hover:bg-accent/50 transition-smooth ${dir === 'rtl' ? 'pr-6' : 'pl-6'} ${isDeviceSettingsActive ? 'bg-accent/30' : ''}`}>
+                      <Cpu className="h-4 w-4 flex-shrink-0" />
+                      <span className={dir === 'rtl' ? 'mr-2' : 'ml-2'}>{t('device_settings')}</span>
                       <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${dir === 'rtl' ? 'mr-auto' : 'ml-auto'} ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className={`${dir === 'rtl' ? 'pr-4' : 'pl-4'} space-y-1 mt-1`}>
+                  <CollapsibleContent className={`${dir === 'rtl' ? 'pr-8' : 'pl-8'} space-y-1 mt-1`}>
                     {deviceSettingsItems.map((item) => (
                       <SidebarMenuButton key={item.url} asChild>
                         <NavLink
