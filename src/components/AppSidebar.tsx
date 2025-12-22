@@ -84,21 +84,26 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Dynamic URI launchers right after Dashboard */}
-              {uriLaunchers.map((launcher) => (
-                <SidebarMenuItem key={launcher.id}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={`/uri-view/${launcher.id}`}
-                      className="hover:bg-accent/50 transition-smooth"
-                      activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
-                    >
-                      <Globe className="h-5 w-5 flex-shrink-0" />
-                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{launcher.name}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {/* Dynamic URI launchers right after Dashboard - open in new tab */}
+              {uriLaunchers.map((launcher) => {
+                const uri = launcher.uri || '';
+                const fullUri = uri.startsWith('http') ? uri : `http://${uri}`;
+                return (
+                  <SidebarMenuItem key={launcher.id}>
+                    <SidebarMenuButton asChild>
+                      <a
+                        href={fullUri}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center w-full px-3 py-2 rounded-md hover:bg-accent/50 transition-smooth"
+                      >
+                        <Globe className="h-5 w-5 flex-shrink-0" />
+                        <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{launcher.name}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
               
               {/* Other items */}
               {otherItems.map((item) => (
