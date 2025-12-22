@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,9 +17,9 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { language, t, dir } = useLanguage();
 
-  // Load saved credentials on mount
-  useState(() => {
+  useEffect(() => {
     const savedUsername = localStorage.getItem('saved_username');
     const savedPassword = localStorage.getItem('saved_password');
     if (savedUsername && savedPassword) {
@@ -26,7 +27,7 @@ const Login = () => {
       setPassword(savedPassword);
       setRememberMe(true);
     }
-  });
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +38,6 @@ const Login = () => {
       setIsLoading(false);
 
       if (success) {
-        // Save credentials if remember me is checked
         if (rememberMe) {
           localStorage.setItem('saved_username', username);
           localStorage.setItem('saved_password', password);
@@ -45,43 +45,45 @@ const Login = () => {
           localStorage.removeItem('saved_username');
           localStorage.removeItem('saved_password');
         }
-        toast.success('ورود موفقیت‌آمیز');
+        toast.success(language === 'fa' ? 'ورود موفقیت‌آمیز' : 'Login successful');
         navigate('/');
       } else {
-        toast.error('نام کاربری یا رمز عبور اشتباه است');
+        toast.error(language === 'fa' ? 'نام کاربری یا رمز عبور اشتباه است' : 'Invalid username or password');
         setPassword('');
       }
     }, 800);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/5 to-primary/5 p-4 safe-top safe-bottom safe-left safe-right">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/5 to-primary/5 p-4 safe-top safe-bottom safe-left safe-right" dir={dir}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl shadow-glow mb-4 animate-pulse overflow-hidden">
             <img src={atsonLogo} alt="ATSON Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            پنل مدیریت آتسون
+            {language === 'fa' ? 'پنل مدیریت آتسون' : 'ATSON Management Panel'}
           </h1>
           <p className="text-muted-foreground">
-            سامانه مدیریت و کنترل دستگاه‌های هوشمند
+            {language === 'fa' ? 'سامانه مدیریت و کنترل دستگاه‌های هوشمند' : 'Smart Device Management System'}
           </p>
         </div>
 
         <Card className="gradient-card shadow-2xl border-border/50">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl">ورود به سیستم</CardTitle>
+            <CardTitle className="text-2xl">
+              {language === 'fa' ? 'ورود به سیستم' : 'Sign In'}
+            </CardTitle>
             <CardDescription>
-              برای دسترسی به پنل مدیریت، وارد شوید
+              {language === 'fa' ? 'برای دسترسی به پنل مدیریت، وارد شوید' : 'Sign in to access the management panel'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
+            <form onSubmit={handleSubmit} className="space-y-4" dir={dir}>
               <div className="space-y-2">
                 <Label htmlFor="username" className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  نام کاربری
+                  {language === 'fa' ? 'نام کاربری' : 'Username'}
                 </Label>
                 <Input
                   id="username"
@@ -98,7 +100,7 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="password" className="flex items-center gap-2">
                   <Lock className="w-4 h-4" />
-                  رمز عبور
+                  {language === 'fa' ? 'رمز عبور' : 'Password'}
                 </Label>
                 <Input
                   id="password"
@@ -122,7 +124,7 @@ const Login = () => {
                   disabled={isLoading}
                 />
                 <Label htmlFor="remember" className="cursor-pointer text-sm">
-                  من را به خاطر بسپار
+                  {language === 'fa' ? 'من را به خاطر بسپار' : 'Remember me'}
                 </Label>
               </div>
 
@@ -134,10 +136,10 @@ const Login = () => {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    در حال ورود...
+                    {language === 'fa' ? 'در حال ورود...' : 'Signing in...'}
                   </div>
                 ) : (
-                  'ورود'
+                  language === 'fa' ? 'ورود' : 'Sign In'
                 )}
               </Button>
             </form>
@@ -145,7 +147,7 @@ const Login = () => {
         </Card>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
-          طراحی شده توسط | آتسون
+          {language === 'fa' ? 'طراحی شده توسط | آتسون' : 'Designed by | ATSON'}
         </p>
       </div>
     </div>

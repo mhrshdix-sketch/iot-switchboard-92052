@@ -22,6 +22,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'تنظیمات',
     'logout': 'خروج',
     'main_menu': 'منوی اصلی',
+    'device_settings': 'تنظیمات دستگاه',
     'iot_management_panel': 'پنل مدیریت آتسون',
     
     // Settings
@@ -191,6 +192,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'Settings',
     'logout': 'Logout',
     'main_menu': 'Main Menu',
+    'device_settings': 'Device Settings',
     'iot_management_panel': 'ATSON Management Panel',
     
     // Settings

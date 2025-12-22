@@ -16,7 +16,6 @@ import Switches from "./pages/Switches";
 import UriLauncher from "./pages/UriLauncher";
 import UriWebView from "./pages/UriWebView";
 import AddDevice from "./pages/AddDevice";
-import DataManagement from "./pages/DataManagement";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -36,7 +35,9 @@ const ProtectedRoutes = () => {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
-            <div className="flex h-14 items-center px-4 safe-right safe-left justify-end">
+            <div className="flex h-14 items-center px-4 safe-right safe-left">
+              <div className="flex-1" />
+              <h1 className="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">ATSON</h1>
               <SidebarTrigger className="hover:bg-accent rounded-lg p-2 transition-colors">
                 <Cpu className="w-5 h-5" />
               </SidebarTrigger>
@@ -50,7 +51,6 @@ const ProtectedRoutes = () => {
               <Route path="/uri-launcher" element={<UriLauncher />} />
               <Route path="/uri-view/:id" element={<UriWebView />} />
               <Route path="/add-device" element={<AddDevice />} />
-              <Route path="/data-management" element={<DataManagement />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

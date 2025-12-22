@@ -44,7 +44,7 @@ export const SwitchPanelSettings = ({
 }: SwitchPanelSettingsProps) => {
   const [size, setSize] = useState<string>(switchPanel.size || 'md');
   const [icon, setIcon] = useState(switchPanel.icon || '💡');
-  const [colorOn, setColorOn] = useState(switchPanel.colorOn || '#22c55e');
+  const [colorOn, setColorOn] = useState(switchPanel.colorOn || '#2698ff');
   const [name, setName] = useState(switchPanel.name);
   const [retain, setRetain] = useState(switchPanel.retain || false);
 

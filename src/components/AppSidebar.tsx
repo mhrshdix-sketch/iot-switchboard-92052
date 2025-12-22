@@ -1,4 +1,4 @@
-import { Home, Wifi, ToggleLeft, Download, Settings, LogOut, Link2, FilePlus2, Globe } from 'lucide-react';
+import { Home, Wifi, ToggleLeft, Settings, LogOut, Link2, FilePlus2, Globe, ChevronDown, Cpu } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,8 +18,10 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import atsonLogo from '@/assets/atson-logo.png';
+import { useState } from 'react';
 
 export function AppSidebar() {
   const location = useLocation();
@@ -27,21 +29,26 @@ export function AppSidebar() {
   const { t, dir } = useLanguage();
   const { uriLaunchers } = useMqtt();
   const currentPath = location.pathname;
+  const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
 
   const mainItems = [
     { title: t('dashboard'), url: '/', icon: Home },
   ];
 
-  const otherItems = [
+  // Device settings submenu items
+  const deviceSettingsItems = [
     { title: t('connections'), url: '/connections', icon: Wifi },
     { title: t('panels'), url: '/switches', icon: ToggleLeft },
     { title: t('device_ip'), url: '/uri-launcher', icon: Link2 },
+  ];
+
+  const otherItems = [
     { title: t('add_device'), url: '/add-device', icon: FilePlus2 },
-    { title: t('dashboard_info'), url: '/data-management', icon: Download },
     { title: t('settings'), url: '/settings', icon: Settings },
   ];
 
   const isActive = (path: string) => currentPath === path;
+  const isDeviceSettingsActive = deviceSettingsItems.some(item => isActive(item.url));
 
   const handleLogout = () => {
     logout();
@@ -84,7 +91,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Dynamic URI launchers right after Dashboard - open in new tab */}
+              {/* Dynamic URI launchers - open in new tab */}
               {uriLaunchers.map((launcher) => {
                 const uri = launcher.uri || '';
                 const fullUri = uri.startsWith('http') ? uri : `http://${uri}`;
@@ -104,6 +111,33 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+
+              {/* Device Settings Collapsible */}
+              <SidebarMenuItem>
+                <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className={`w-full hover:bg-accent/50 transition-smooth ${isDeviceSettingsActive ? 'bg-accent/30' : ''}`}>
+                      <Cpu className="h-5 w-5 flex-shrink-0" />
+                      <span className={dir === 'rtl' ? 'mr-3' : 'ml-3'}>{t('device_settings')}</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${dir === 'rtl' ? 'mr-auto' : 'ml-auto'} ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className={`${dir === 'rtl' ? 'pr-4' : 'pl-4'} space-y-1 mt-1`}>
+                    {deviceSettingsItems.map((item) => (
+                      <SidebarMenuButton key={item.url} asChild>
+                        <NavLink
+                          to={item.url}
+                          className="hover:bg-accent/50 transition-smooth"
+                          activeClassName="bg-primary text-primary-foreground font-medium shadow-sm"
+                        >
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className={dir === 'rtl' ? 'mr-2' : 'ml-2'}>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
               
               {/* Other items */}
               {otherItems.map((item) => (
