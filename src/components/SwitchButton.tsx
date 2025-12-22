@@ -99,19 +99,19 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
         disabled={!isConnected}
         className={cn(
           'relative group overflow-hidden rounded-2xl',
-          'transition-all duration-500 ease-out',
+          'transition-all duration-300 ease-out',
           'border-2 shadow-lg',
           'flex flex-col items-center justify-center gap-3',
           'w-full',
           sizeClasses[size],
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'hover:scale-105',
+          'active:scale-95',
           !isConnected && 'grayscale',
-          isSelected && 'ring-4 ring-primary ring-offset-2 ring-offset-background'
+          isSelected && 'scale-[1.02]'
         )}
         style={{
           backgroundColor: isActive ? `${colorOn}15` : 'hsl(var(--card))',
-          borderColor: isSelected ? 'hsl(var(--primary))' : isActive ? colorOn : 'hsl(var(--border))',
+          borderColor: isActive ? colorOn : 'hsl(var(--border))',
           boxShadow: isActive ? `0 0 24px ${colorOn}40` : undefined,
         }}
         dir="rtl"
@@ -123,13 +123,6 @@ export const SwitchButton = ({ switchPanel }: SwitchButtonProps) => {
         >
           <MoreVertical className="w-4 h-4" />
         </button>
-
-        {/* Selection Indicator */}
-        {isSelected && (
-          <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium z-20">
-            انتخاب شده
-          </div>
-        )}
 
         {/* Background Glow Effect */}
         <div 

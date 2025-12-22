@@ -55,11 +55,74 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/5 to-primary/5 p-4 safe-top safe-bottom safe-left safe-right" dir={dir}>
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/5 to-primary/5 p-4 safe-top safe-bottom safe-left safe-right relative overflow-hidden" dir={dir}>
+      {/* Tech Effect Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated grid */}
+        <div className="absolute inset-0 opacity-10">
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px),
+                               linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)`,
+              backgroundSize: '50px 50px',
+              animation: 'gridMove 20s linear infinite',
+            }}
+          />
+        </div>
+        
+        {/* Floating orbs */}
+        <div className="absolute top-10 left-1/4 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-20 right-1/4 w-96 h-96 bg-secondary/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute -top-20 left-1/2 w-80 h-80 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        
+        {/* Circuit lines */}
+        <svg className="absolute top-0 left-0 w-full h-1/2 opacity-20" viewBox="0 0 400 200" preserveAspectRatio="none">
+          <path 
+            d="M0,100 Q100,50 200,100 T400,100" 
+            stroke="hsl(var(--primary))" 
+            strokeWidth="0.5" 
+            fill="none"
+            className="animate-pulse"
+          />
+          <path 
+            d="M0,150 Q150,100 300,150 T400,150" 
+            stroke="hsl(var(--secondary))" 
+            strokeWidth="0.5" 
+            fill="none"
+            className="animate-pulse"
+            style={{ animationDelay: '0.5s' }}
+          />
+          <circle cx="100" cy="75" r="3" fill="hsl(var(--primary))" className="animate-ping" style={{ animationDuration: '2s' }} />
+          <circle cx="250" cy="125" r="3" fill="hsl(var(--secondary))" className="animate-ping" style={{ animationDuration: '2.5s' }} />
+          <circle cx="350" cy="100" r="3" fill="hsl(var(--primary))" className="animate-ping" style={{ animationDuration: '3s' }} />
+        </svg>
+        
+        {/* Scanning line effect */}
+        <div 
+          className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+          style={{
+            animation: 'scanLine 4s ease-in-out infinite',
+          }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes gridMove {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(50px, 50px); }
+        }
+        @keyframes scanLine {
+          0%, 100% { top: 0; opacity: 0; }
+          50% { top: 40%; opacity: 1; }
+        }
+      `}</style>
+
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl shadow-glow mb-4 animate-pulse overflow-hidden">
-            <img src={atsonLogo} alt="ATSON Logo" className="w-full h-full object-cover" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl shadow-glow mb-4 overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 animate-pulse" />
+            <img src={atsonLogo} alt="ATSON Logo" className="w-full h-full object-cover relative z-10" />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             {language === 'fa' ? 'پنل مدیریت آتسون' : 'ATSON Management Panel'}
